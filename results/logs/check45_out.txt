@@ -1,0 +1,115 @@
+
+====================================================================================================
+PART 1. TEAM LEVEL, your definition of YPA. 7,326 team-games, 2012-2025 regular season; mean 6.74, sd 1.80
+
+1a. Each variable alone vs the NEXT game's YPA (offense vars vs own YPA, defense vars vs YPA allowed). n~7,400 so |r| < 0.03 is indistinguishable from zero
+                                variable      r
+        ** plain trailing offense YPA **  0.195
+           off_cpoe_all_past_sticks_mean  0.165
+** plain trailing defense YPA allowed **  0.130
+                  off_cpoe_mean_d3_short  0.096
+                 off_d1_std_epa_pos_mean  0.095
+         off_cpoe_p90_all_short_distance  0.085
+                         def_comp_all_sr  0.083
+                        def_lead_d2_cpoe  0.075
+                 off_lead_late_air_yards  0.072
+                   def_neut_q2_air_yards  0.063
+                      def_ns_comp_q1_epa  0.062
+                       off_press_rate_d3 -0.061
+               def_ns_behind_los_yac_std  0.061
+              off_late_downs_std_epa_std  0.057
+                         def_h1_cpoe_med  0.056
+                      off_cpoe_p25_trail  0.053
+               def_pass_only_trail_d3_sr  0.052
+                     def_blowout_air_std  0.052
+             def_ns_d3_med_air_yards_med  0.049
+           off_blowout_std_air_comp_mean  0.049
+          off_neut_early_downs_adot_mean  0.048
+                 off_sr_trail_d1_q1_mean  0.043
+                   def_comp_deep_yac_med  0.039
+                   def_trail_q3_complete  0.039
+                 def_early_short_yac_med  0.036
+                  def_d3_med_inc_air_med  0.036
+                    def_backedup_ypa_min  0.034
+              off_air_d4_short_comp_rate  0.033
+               off_yac_median_neutral_q2  0.033
+                         off_adot_p90_d1  0.033
+                   def_lead_comp_air_std  0.031
+                       def_ns_d3_long_sr  0.031
+                        def_trail_d1_yac  0.030
+                         def_ns_cpoe_min  0.026
+                  off_cp_mean_neutral_q4  0.025
+           def_blowout_std_air_comp_mean  0.023
+                         off_d3_long_yac  0.023
+                     off_q3_pos_cpoe_std  0.022
+                       def_ns_h2_yac_med  0.018
+ off_short_sticks_early_q1_cpoe_neg_mean  0.015
+             def_pass_lead_d1_inc_fd_pct -0.015
+              off_neut_adot_p75_d2_short -0.014
+               def_yac_median_neutral_q2  0.006
+             off_comp_neut_d1_q1_epa_std  0.005
+                 off_d4_std_epa_neg_mean -0.001
+                           off_cp_p75_q1  0.001
+          def_ns_comp_deep_air_yards_med  0.000
+variables with |r| > 0.03: 31 of 45
+
+1b. Your protocol replayed on every consecutive week pair 2012-2025: fit lm on week w (32 rows), predict week w+1
+week pairs: 229, predictions: 6,880; average IN-SAMPLE R^2 of the week-w offense fit: 0.77
+                                      method  r with actual  RMSE weeks with r>0
+           your offense lm (22 vars, 1 week)          0.067 2.629            65%
+           your defense lm (23 vars, 1 week)          0.028 2.964            58%
+                           your matchup mean          0.065 2.314            65%
+plain trailing (off YPA + def YPA allowed)/2          0.226 1.751            90%
+     just predict last week's league average            NaN 1.822               
+
+1c. SAME 45 variables, trained on all seasons instead of one week (5 season-scattered folds, ridge / LightGBM)
+             features  ridge r  ridge RMSE  LightGBM r  LightGBM RMSE
+    your 45 variables    0.211       1.757       0.215          1.756
+2 plain trailing YPAs    0.229       1.750       0.224          1.753
+                 both    0.231       1.750       0.235          1.748
+(RMSE of always predicting the mean: 1.798)
+rows whose team is not in game_id: 0.000% (dropped)
+
+====================================================================================================
+PART 2. QB yards per attempt: 7,406 QB-games, 5 season-scattered folds. RMSE of predicting the mean = 1.900
+                                feature set  EB+Ridge r  EB+LightGBM r  Blend r  EB+Ridge RMSE  EB+LightGBM RMSE  Blend RMSE
+                    A. my previous features       0.253          0.253    0.261          1.837             1.838       1.834
+                  B. your 45 variables only       0.209          0.202    0.212          1.857             1.862       1.856
+                             C. A + your 45       0.251          0.248    0.257          1.839             1.841       1.836
+D. A + clean QB/defense EPA, CPOE, pressure       0.265          0.264    0.273          1.831             1.833       1.827
+E. D + Vegas spread/total, roof, wind, temp       0.299          0.296    0.304          1.812             1.815       1.809
+                             F. E + your 45       0.296          0.290    0.299          1.814             1.818       1.812
+
+====================================================================================================
+PART 2. QB passing yards: 7,993 QB-games, 5 season-scattered folds. RMSE of predicting the mean = 96.693
+                                feature set  EB+Ridge r  EB+LightGBM r  Blend r  EB+Ridge RMSE  EB+LightGBM RMSE  Blend RMSE
+                    A. my previous features       0.508          0.558    0.549         83.272            80.267      80.858
+                  B. your 45 variables only       0.410          0.435    0.428         88.185            87.083      87.399
+                             C. A + your 45       0.507          0.558    0.548         83.338            80.265      80.903
+D. A + clean QB/defense EPA, CPOE, pressure       0.507          0.584    0.569         83.322            78.469      79.618
+E. D + Vegas spread/total, roof, wind, temp       0.515          0.595    0.578         82.877            77.717      79.008
+                             F. E + your 45       0.514          0.594    0.577         82.930            77.787      79.102
+
+====================================================================================================
+PART 2. QB fantasy points (PPR): 7,993 QB-games, 5 season-scattered folds. RMSE of predicting the mean = 11.352
+                                feature set  EB+Ridge r  EB+LightGBM r  Blend r  EB+Ridge RMSE  EB+LightGBM RMSE  Blend RMSE
+                    A. my previous features       0.421          0.429    0.433         10.296            10.254      10.234
+                  B. your 45 variables only       0.358          0.370    0.369         10.599            10.546      10.549
+                             C. A + your 45       0.419          0.431    0.433         10.307            10.244      10.233
+D. A + clean QB/defense EPA, CPOE, pressure       0.420          0.444    0.443         10.301            10.173      10.180
+E. D + Vegas spread/total, roof, wind, temp       0.427          0.459    0.454         10.267            10.083      10.113
+                             F. E + your 45       0.424          0.459    0.453         10.279            10.083      10.120
+
+====================================================================================================
+PART 3. QB YPA, best feature set, blend. Calibration (cross-fitted on out-of-fold predictions): raw slope 1.005, intercept -0.037 -> slope 0.997, intercept 0.023; map actual = -0.037 + 1.005*pred; RMSE 1.809 -> 1.810
+single pass attempt: sd of yards gained = 9.7. With 33 attempts a game, pure luck alone gives a single-game YPA error of 1.78
+  -> RMSE now 1.810; RMSE if we knew every QB's true skill exactly ~ 1.78; RMSE of guessing the average 1.900
+  -> share of the REMOVABLE error already removed: 75%
+
+Multi-game windows (your original 'predict N games, then see what happened'): forecast made before the first game, scored on the N-game total
+ games in window  windows     r  RMSE  RMSE guessing the average  luck-only floor
+               1     7406 0.304 1.810                      1.900            1.779
+               2     3516 0.338 1.275                      1.350            1.227
+               4     1587 0.398 0.942                      1.015            0.857
+               8      654 0.391 0.762                      0.799            0.600
+              16      217 0.269 0.695                      0.650            0.420

@@ -1,0 +1,103 @@
+
+====================================================================================================
+TEAM-LEVEL DEFENSIVE YPA MODEL. 7,328 team-games 2012-2026 wk1, 5 season-scattered folds; variable pruning is redone inside every fold
+                                       feature set your vars kept  OOF r  OOF RMSE
+                   all 45 of your variables + core          45-45 0.3225    1.7027
+pruned: drop noise AND negative (your rule) + core          25-29 0.3258    1.7006
+     pruned: drop noise only, keep negative + core          26-30 0.3250    1.7010
+     core only (trailing YPAs + Vegas + roof/wind)            0-0 0.3248    1.7010
+(RMSE of guessing the mean: 1.799)
+
+FINAL VARIABLE LIST (r > +0.03 with next-game YPA): kept 27 of 45
+  KEPT offense: off_late_downs_std_epa_std(+0.057), off_d1_std_epa_pos_mean(+0.093), off_blowout_std_air_comp_mean(+0.050), off_air_d4_short_comp_rate(+0.034), off_cpoe_all_past_sticks_mean(+0.165), off_neut_early_downs_adot_mean(+0.048), off_cpoe_p90_all_short_distance(+0.085), off_cpoe_mean_d3_short(+0.096), off_cpoe_p25_trail(+0.055), off_adot_p90_d1(+0.033), off_lead_late_air_yards(+0.069), off_sr_trail_d1_q1_mean(+0.042)
+  KEPT defense: def_comp_all_sr(+0.082), def_neut_q2_air_yards(+0.062), def_lead_d2_cpoe(+0.074), def_trail_q3_complete(+0.039), def_ns_behind_los_yac_std(+0.058), def_ns_comp_q1_epa(+0.060), def_ns_d3_med_air_yards_med(+0.051), def_early_short_yac_med(+0.036), def_comp_deep_yac_med(+0.040), def_backedup_ypa_min(+0.032), def_blowout_air_std(+0.053), def_lead_comp_air_std(+0.032), def_d3_med_inc_air_med(+0.036), def_pass_only_trail_d3_sr(+0.052), def_h1_cpoe_med(+0.055)
+  DROPPED as noise: off_d4_std_epa_neg_mean(-0.002), off_q3_pos_cpoe_std(+0.023), off_yac_median_neutral_q2(+0.029), off_cp_mean_neutral_q4(+0.025), off_neut_adot_p75_d2_short(-0.014), off_cp_p75_q1(+0.002), off_d3_long_yac(+0.023), off_comp_neut_d1_q1_epa_std(+0.004), off_short_sticks_early_q1_cpoe_neg_mean(+0.015), def_blowout_std_air_comp_mean(+0.023), def_yac_median_neutral_q2(+0.004), def_trail_d1_yac(+0.029), def_ns_comp_deep_air_yards_med(+0.002), def_ns_h2_yac_med(+0.017), def_ns_d3_long_sr(+0.029), def_pass_lead_d1_inc_fd_pct(-0.013), def_ns_cpoe_min(+0.025)
+  DROPPED as negative: off_press_rate_d3(-0.060)
+calibration on out-of-fold predictions: actual = -0.273 + 1.040 * pred
+
+====================================================================================================
+PROJECTED DEFENSIVE YARDS PER ATTEMPT ALLOWED, 2026 WEEK 2 (lower = tougher pass defense this week). League average ~6.74
+Defense vs Offense  Proj YPA allowed  Def trailing YPA allowed  Opp offense trailing YPA  Opp implied points
+    PHI        TEN              5.66                      5.86                      5.13               16.25
+     SF        MIA              5.68                      6.78                      6.49               15.50
+     NE        PIT              5.70                      6.33                      6.19               18.00
+    LAC         LV              5.94                      6.02                      5.71               18.50
+     TB        CLE              5.95                      7.20                      5.30               16.50
+    SEA        ARI              6.07                      5.51                      6.20               18.50
+     GB        NYJ              6.11                      5.99                      5.13               20.50
+     KC        IND              6.17                      6.24                      6.92               20.25
+     LA        NYG              6.27                      6.22                      6.38               20.25
+    BAL         NO              6.30                      6.62                      6.43               19.00
+    DEN        JAX              6.43                      5.43                      6.83               21.25
+    CAR        ATL              6.46                      6.98                      6.39               20.50
+    JAX        DEN              6.47                      5.89                      6.04               24.25
+    CHI        MIN              6.55                      7.26                      5.86               21.50
+    HOU        CIN              6.55                      6.19                      6.32               21.50
+    ATL        CAR              6.73                      6.36                      6.22               23.00
+    CLE         TB              6.86                      6.16                      6.24               25.00
+    PIT         NE              6.88                      6.65                      7.88               23.50
+    IND         KC              6.89                      6.94                      6.18               26.25
+    TEN        PHI              6.90                      7.66                      6.56               23.25
+    MIN        CHI              6.90                      6.26                      6.82               26.00
+    NYJ         GB              7.03                      6.88                      7.47               24.00
+     LV        LAC              7.05                      6.48                      6.28               25.00
+    ARI        SEA              7.06                      6.93                      7.95               22.00
+    CIN        HOU              7.09                      7.29                      6.37               24.00
+    DAL        WAS              7.14                      7.50                      6.53               23.50
+     NO        BAL              7.36                      6.12                      7.32               27.50
+    MIA         SF              7.40                      7.01                      7.12               29.00
+    NYG         LA              7.46                      6.54                      7.55               27.25
+    WAS        DAL              7.55                      7.48                      7.07               27.00
+
+TRACKED MATCHUPS
+Defense  Season  Week vs Offense  Proj def YPA allowed  Actual YPA allowed                   note
+     LV    2025    12        CLE                  5.85               10.80 out-of-fold projection
+    DAL    2025    15        MIN                  6.94               10.09 out-of-fold projection
+    CHI    2025     2        DET                  7.68               11.93 out-of-fold projection
+    CHI    2026     2        MIN                  6.55                 NaN         not played yet
+     NE    2025     2        MIA                  6.60                8.51 out-of-fold projection
+     NE    2026     2        PIT                  5.70                 NaN         not played yet
+    SEA    2025    18         SF                  6.77                4.23 out-of-fold projection
+    MIN    2025    13        SEA                  7.32                4.27 out-of-fold projection
+rows whose team is not in game_id: 0.000% (dropped)
+
+====================================================================================================
+QB MODELS refit through 2026 week 1 (+ DET@BUF). Out-of-fold check:
+     target       model  train games  OOF r  OOF RMSE        calibration
+        ypa       Blend         7439  0.304     1.810 -0.05 + 1.006*pred
+   pass_yds EB+LightGBM         8028  0.594    77.734 -4.09 + 1.017*pred
+fantasy_pts EB+LightGBM         8028  0.459    10.077  0.02 + 0.997*pred
+
+2026 WEEK 2 QB PROJECTIONS (assumes each team's week-1 starter plays; DET/BUF already played Thursday)
+              QB team opp  ypa  pass_yds  fantasy_pts  team implied pts  career att in data
+    Dak Prescott  DAL WAS 8.25    270.70        22.85             27.00              4991.0
+  Caleb Williams  CHI MIN 8.10    251.63        22.18             26.00              1235.0
+ Patrick Mahomes   KC IND 8.09    265.26        21.81             26.25              5404.0
+   Lamar Jackson  BAL  NO 8.48    232.99        21.75             27.50              3107.0
+     Brock Purdy   SF MIA 8.13    239.41        21.46             29.00              1575.0
+  Jayden Daniels  WAS DAL 7.49    234.44        21.01             23.50               807.0
+     Jalen Hurts  PHI TEN 7.60    235.13        20.91             23.25              2675.0
+Matthew Stafford   LA NYG 7.98    274.73        20.78             27.25              7959.0
+          Bo Nix  DEN JAX 7.25    230.16        20.40             24.25              1256.0
+  Justin Herbert  LAC  LV 7.94    221.87        20.10             25.00              3524.0
+      Joe Burrow  CIN HOU 7.37    260.98        19.21             21.50              3045.0
+  Baker Mayfield   TB CLE 7.60    236.10        19.04             25.00              4049.0
+     C.J. Stroud  HOU CIN 7.89    245.55        19.03             24.00              1662.0
+     Jaxson Dart  NYG  LA 7.10    226.73        18.64             20.25               365.0
+      Drake Maye   NE PIT 8.30    225.48        18.60             23.50               964.0
+     Bryce Young  CAR ATL 7.43    226.86        17.18             23.00              1439.0
+ Trevor Lawrence  JAX DEN 7.37    216.90        17.15             21.25              2677.0
+     Jordan Love   GB NYJ 7.95    246.71        17.15             24.00              1673.0
+    Carson Wentz  MIN CHI 7.52    238.68        15.93             21.50              3465.0
+    Daniel Jones  IND  KC 7.14    214.16        15.31             20.25              2669.0
+      Geno Smith  NYJ  GB 7.15    207.16        14.83             20.50              3084.0
+    Tyler Shough   NO BAL 7.10    231.77        14.40             19.00               380.0
+    Kirk Cousins   LV LAC 7.00    217.63        13.97             18.50              5966.0
+ Jacoby Brissett  ARI SEA 6.79    222.72        13.76             18.50              2262.0
+  Deshaun Watson  CLE  TB 6.98    203.83        13.73             16.50              2408.0
+       Drew Lock  SEA ARI 7.24    193.38        13.58             22.00               967.0
+        Cam Ward  TEN PHI 6.26    196.83        13.42             16.25               566.0
+     Cooper Rush  ATL CAR 7.49    217.63        12.83             20.50               604.0
+   Aaron Rodgers  PIT  NE 6.53    204.85        12.52             18.00              7184.0
+    Malik Willis  MIA  SF  NaN       NaN          NaN               NaN                 NaN
+no projection (QB has too little history for the pre-game filter): ['MIA']
