@@ -59,9 +59,9 @@ def build(kind):
     e = b.prior_sums(o, ["posteam"], ["num", "den", "epa_s"], "o", halflife=8)
     o["exp_rate"], o["exp_epa"] = e.o_num / e.o_den, e.o_epa_s / e.o_den
     g = g.merge(o[["game_id", "posteam", "exp_rate", "exp_epa"]], on=["game_id", "posteam"]).sort_values(["defteam", "t"]).reset_index(drop=True)
-    lg = g.num.sum() / g.den.sum()
-    g["over_exp"] = g.num - g.exp_rate.fillna(lg) * g.den                 # yards allowed above what that offense normally gains
-    g["epa_over_exp"] = g.epa_s - g.exp_epa.fillna(0) * g.den
+    # no expectation yet (offense's first game in the data) -> no adjustment. Never fill with a whole-sample constant.
+    g["over_exp"] = g.num - g.exp_rate.fillna(g.num / g.den) * g.den      # yards allowed above what that offense normally gains
+    g["epa_over_exp"] = g.epa_s - g.exp_epa.fillna(g.epa_s / g.den) * g.den
     sums2 = sums + ["over_exp", "epa_over_exp", "gp"]
     W = {"ewS": dict(halflife=3), "ewL": dict(halflife=10), "l4": dict(window=4)}
     parts = {k: b.prior_sums(g, ["defteam"], sums2, k, **kw) for k, kw in W.items()}

@@ -54,7 +54,7 @@ def prior_sums(df, keys, cols, prefix, window=None, halflife=None):
         elif halflife:
             v = g[c].transform(lambda s: s.shift(1).ewm(halflife=halflife, adjust=True).mean())
         else:
-            v = g[c].cumsum() - df[c]
+            v = g[c].transform(lambda s: s.cumsum().shift(1)).fillna(0)   # shifted, so the current row is never touched (not even by rounding)
         out[f"{prefix}_{c}"] = v
     return pd.DataFrame(out, index=df.index)
 

@@ -1,0 +1,32 @@
+==============================================================================================================
+PASS YPA ALLOWED - HOW FEW SEASONS? Train on only the last N seasons before S, predict S; test seasons 2021-2025
+ training seasons  training games  in-sample r  forward r  overfit gap (in - forward)  forward RMSE  RMSE vs best  noise (1 s.e.)  avg weekly r
+                1             537       0.5297     0.2923                      0.2374        1.7209        0.0208          0.0052        0.2974
+                2            1068       0.5224     0.3013                      0.2210        1.7159        0.0158          0.0043        0.3107
+                3            1592       0.4808     0.3122                      0.1686        1.7097        0.0096          0.0034        0.3227
+                4            2110       0.4561     0.3154                      0.1406        1.7079        0.0078          0.0030        0.3273
+                5            2622       0.4395     0.3159                      0.1236        1.7075        0.0074          0.0023        0.3277
+                6            3134       0.4245     0.3227                      0.1018        1.7036        0.0035          0.0017        0.3322
+                7            3646       0.4124     0.3269                      0.0855        1.7010        0.0009          0.0016        0.3341
+                8            4158       0.4004     0.3249                      0.0755        1.7021        0.0020          0.0011        0.3336
+                9            4664       0.3906     0.3284                      0.0622        1.7001        0.0000          0.0000        0.3373
+(RMSE of guessing the average: 1.8021)
+best N = 9; smallest N within one standard error of the best: N = 7 seasons
+
+==============================================================================================================
+PASS YPA ALLOWED - WHICH MODEL? Strict forward 2018-2025; tracked matchups = the six 2025 games
+                         features                  model  forward r  avg weekly r weeks r>0  avg per-game L2 (RMSE)  2025 r  tracked-6 r
+ D + pruned situational variables                  blend      0.341         0.345       99%                   1.706   0.410        0.001
+              C + Vegas/roof/wind                  ridge      0.342         0.344       98%                   1.705   0.391       -0.218
+              C + Vegas/roof/wind       OLS (no penalty)      0.342         0.344       98%                   1.705   0.391       -0.224
+ D + pruned situational variables                  ridge      0.339         0.344       99%                   1.707   0.406        0.054
+              C + Vegas/roof/wind                  blend      0.342         0.343       99%                   1.705   0.397       -0.170
+ D + pruned situational variables       OLS (no penalty)      0.339         0.341       98%                   1.706   0.407        0.070
+              C + Vegas/roof/wind              KNN k=200      0.334         0.338       97%                   1.713   0.400       -0.053
+ D + pruned situational variables                   lgbm      0.334         0.337       98%                   1.709   0.409       -0.050
+              C + Vegas/roof/wind                   lgbm      0.336         0.335       99%                   1.708   0.399       -0.125
+ D + pruned situational variables              KNN k=200      0.315         0.320       96%                   1.732   0.380       -0.159
+B + opposing offense trailing YPA                  ridge      0.254         0.265       91%                   1.756   0.265       -0.129
+B + opposing offense trailing YPA                  blend      0.251         0.261       89%                   1.757   0.273       -0.063
+B + opposing offense trailing YPA                   lgbm      0.237         0.244       88%                   1.762   0.273        0.017
+   A defense trailing YPA allowed trailing number itself      0.128         0.122       74%                   1.816   0.157        0.793
