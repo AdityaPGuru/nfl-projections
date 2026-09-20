@@ -1,0 +1,56 @@
+DEFENSIVE PASS YPA ALLOWED. 7,326 defense-games, 2012-2025 regular season; mean 6.74, sd 1.80
+new level-1 members, season 2015
+new level-1 members, season 2016
+new level-1 members, season 2017
+new level-1 members, season 2018
+new level-1 members, season 2019
+new level-1 members, season 2020
+new level-1 members, season 2021
+new level-1 members, season 2022
+new level-1 members, season 2023
+new level-1 members, season 2024
+new level-1 members, season 2025
+
+FINAL MODEL vs BASELINES. Defensive pass YPA allowed, strictly forward 2020-2025, 3,230 games, 107 weekly vectors
+
+                                           model     r  avg weekly r  per-game L2  sd of proj proj range  slope weeks FINAL has lower L2  FINAL's MSE edge  edge / noise
+    BASELINE 1: guess the prior seasons' average 0.017        -0.000        1.791       0.018  6.75-6.80  1.624                      82%             0.363         9.826
+BASELINE 2: defense's trailing YPA allowed (raw) 0.122         0.117        1.788       0.424  5.45-8.38  0.515                      90%             0.351        11.052
+  BASELINE 3: your 23 defensive variables, ridge 0.114         0.114        1.778       0.232  5.99-7.65  0.880                      81%             0.314        10.140
+ BASELINE 4: defense shrunk level (SD-derived k) 0.111         0.110        1.780       0.267  5.95-7.69  0.747                      87%             0.321        10.407
+    Ridge, 7 inputs (previous best single model) 0.332         0.343        1.688       0.577  5.03-8.71  1.030                      54%             0.003         0.334
+          Previous stack (17 models), calibrated 0.333         0.345        1.687       0.621  5.07-8.48  0.960                      53%             0.000         0.127
+                   Ridge, 7 inputs + starting QB 0.332         0.342        1.688       0.568  4.88-8.62  1.045                      51%             0.003         0.379
+                       Lasso, full + starting QB 0.338         0.346        1.684       0.570  4.87-8.58  1.061                      48%            -0.009        -1.139
+       FINAL: stack of all 21 models, calibrated 0.333         0.345        1.687       0.621  5.01-8.48  0.959                       0%             0.000           NaN
+
+QB shrinkage constant learned per season (attempts): 2020: 643, 2021: 622, 2022: 628, 2023: 686, 2024: 588, 2025: 620
+   games where the offense changed starting QB from its previous game: 443 games | actual 6.26 | L2 ridge-7 1.706 -> previous stack 1.710 -> FINAL 1.708 | bias ridge-7 -0.15, FINAL -0.10
+   starter with under 150 career attempts: 252 games | actual 6.06 | L2 ridge-7 1.810 -> previous stack 1.811 -> FINAL 1.808 | bias ridge-7 -0.19, FINAL -0.14
+   same starter as last game: 2,787 games | actual 6.74 | L2 ridge-7 1.685 -> previous stack 1.683 -> FINAL 1.684 | bias ridge-7 -0.03, FINAL -0.00
+
+meta-model weights (standardised), top 8: Lasso, full +0.088, Lasso, full + starting QB +0.086, Defense baseline: your 23, OLS no penalty +0.077, SVR, 7 inputs +0.073, KNN team-vector comps + Vegas -0.070, EB defense level -0.059, Random forest, full +0.056, Logistic P(above median) +0.055
+
+FINAL, reliability by decile:
+b             0     1     2     3     4     5     6     7     8     9
+projected  5.64  6.01  6.24  6.42  6.59  6.77  6.94  7.15  7.38  7.77
+actual     5.61  6.01  6.08  6.56  6.64  6.81  6.91  7.23  7.40  7.50
+
+by season:
+        r FINAL  L2 FINAL  L2 your 23 baseline  L2 guess average
+season                                                          
+2020      0.355     1.624                1.695             1.721
+2021      0.330     1.708                1.803             1.807
+2022      0.243     1.585                1.625             1.630
+2023      0.371     1.735                1.843             1.865
+2024      0.329     1.780                1.890             1.878
+2025      0.402     1.678                1.792             1.831
+
+2025 tracked matchups:
+defteam  week posteam      qb_name  actual  FINAL  your-23 baseline
+     LV    12     CLE    S.Sanders   10.80   5.46              6.71
+    DAL    15     MIN   J.McCarthy   10.09   6.55              7.05
+    CHI     2     DET       J.Goff   11.93   7.48              6.76
+     NE     2     MIA T.Tagovailoa    8.51   6.63              6.78
+    SEA    18      SF      B.Purdy    4.23   6.73              6.43
+    MIN    13     SEA    S.Darnold    4.27   7.48              6.42

@@ -1,0 +1,38 @@
+DEFENSIVE PASS YPA ALLOWED. 7,326 defense-games, 2012-2025 regular season; mean 6.74, sd 1.80
+DOES KNN WORK WHEN THE OFFENSE IS ELITE? Forward 2018-2025. L2 = per-game RMSE (lower is better). 'MSE gain vs ridge' > 0 means KNN beat ridge; compare it with its noise.
+
+                                            0                                    1                                    2                                            3                                         4
+group                               ALL GAMES  Elite offense: trailing YPA top 10%  Elite offense: trailing YPA top 20%  Elite offense: Vegas implied points top 10%  Everyone else (not top-20% trailing YPA)
+games                                    4254                                  377                                  777                                          480                                      3477
+avg actual YPA                          6.722                                7.427                                7.337                                         7.65                                     6.584
+ridge proj                              6.746                                 7.35                                7.291                                        7.691                                     6.625
+L2 guess avg                            1.813                                1.794                                1.833                                        1.746                                      1.78
+L2 ridge                                 1.71                                1.769                                1.812                                        1.761                                     1.686
+L2 KNN comps                            1.758                                1.798                                 1.84                                        1.835                                     1.739
+L2 KNN+Vegas                            1.728                                1.777                                1.829                                        1.787                                     1.705
+MSE gain vs ridge (best KNN)           -0.065                               -0.102                                -0.13                                       -0.029                                    -0.066
+noise (1 s.e.)                          0.013                                0.077                                0.059                                        0.045                                     0.013
+r ridge                                 0.334                                0.183                                0.168                                        0.013                                     0.323
+r KNN+Vegas                             0.302                                0.141                                0.098                                       -0.072                                     0.288
+r elite-only KNN                          NaN                                0.046                               -0.002                                       -0.059                                       NaN
+does KNN explain ridge's misses? r     -0.018                                0.061                                0.036                                        0.067                                    -0.031
+L2 elite-only KNN                         NaN                                1.798                                1.848                                        1.769                                       NaN
+
+STYLE CHECK among the 777 elite-offense games: after ridge's projection, which defensive traits still line up with the miss? (|r| under ~0.07 is noise)
+ewL_deep_cmp    -0.098
+ewL_td          -0.097
+ewL_late_rate   -0.071
+ewL_deep_ypa    -0.066
+ewL_epa         -0.059
+ewL_succ        -0.052
+ewL_int          0.050
+ewL_yac_c        0.050
+same check among everyone else: ewL_adot +0.041, ewL_deep_share +0.038, ewL_cmp -0.025, ewL_press -0.025
+
+elite offenses by the defense they faced (actual YPA, ridge projection):
+                   games  actual  ridge  knn_elite
+good_def press_hi                                 
+no       no          251    7.47   7.52       7.49
+         yes         137    7.49   7.40       7.41
+yes      no          137    7.14   7.17       7.27
+         yes         252    7.23   7.07       7.16

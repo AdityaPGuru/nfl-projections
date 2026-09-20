@@ -1,0 +1,40 @@
+PER-GAME RANGES, 2022-2025 (2,174 games). Blow-up = actual in the top 10% of prior seasons (about 9.0+), shutdown = bottom 10% (about 4.6 or less)
+
+how wide the outputs are now:
+     point projection  projected 5th pct  projected 95th pct
+min              5.01               2.64                7.91
+max              8.03               5.40               11.00
+typical game: projection 6.56, range 4.18 to 9.54 (5th-95th), 4.58 to 8.72 (10th-90th)
+
+coverage check (share of actual results that fell below each projected percentile; should match the label):
+q5: 4.4%  q10: 8.5%  q50: 48.1%  q90: 89.2%  q95: 94.7%
+inside the 10th-90th range: 80.7% (target 80%); inside 5th-95th: 90.3% (target 90%)
+
+BLOW-UP probability, games grouped by the model's probability:
+             games  avg_probability  actually_happened
+b                                                     
+lowest 20%     435            0.044              0.032
+20-40%         435            0.058              0.046
+40-60%         434            0.078              0.076
+60-80%         435            0.104              0.136
+highest 20%    435            0.141              0.159
+   the 5% of games with the highest blow-up probability: predicted 17.8%, happened 23.9% (base rate 9.0%); range of probabilities 2.2% to 25.4%
+
+SHUTDOWN probability, games grouped by the model's probability:
+             games  avg_probability  actually_happened
+b                                                     
+lowest 20%     435            0.046              0.032
+20-40%         435            0.078              0.057
+40-60%         434            0.106              0.085
+60-80%         435            0.143              0.143
+highest 20%    435            0.246              0.234
+   the 5% of games with the highest shutdown probability: predicted 31.7%, happened 29.7% (base rate 11.0%); range of probabilities 1.5% to 45.5%
+
+2025 tracked matchups with ranges:
+defteam  week posteam  actual  proj   q5  q10  q90   q95  p_blowup  p_shutdown
+     LV    12     CLE   10.80  5.46 3.13 3.65 7.56  8.21      0.03        0.33
+    DAL    15     MIN   10.09  6.55 4.20 4.60 8.87  9.46      0.09        0.10
+    CHI     2     DET   11.93  7.48 4.85 5.27 9.62 10.45      0.16        0.04
+     NE     2     MIA    8.51  6.63 4.28 4.69 8.95  9.55      0.10        0.09
+    SEA    18      SF    4.23  6.73 4.38 4.79 9.05  9.65      0.11        0.08
+    MIN    13     SEA    4.27  7.48 4.86 5.28 9.62 10.46      0.16        0.04

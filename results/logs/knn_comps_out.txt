@@ -1,0 +1,77 @@
+DEFENSIVE PASS YPA ALLOWED. 7,326 defense-games, 2012-2025 regular season; mean 6.74, sd 1.80
+TEAM-VECTOR KNN vs THE CURRENT BEST. Pass YPA allowed, strictly forward. Vector = 23 passing-profile stats per side (rate, net, adj_rate, epa, succ, fd, expl, td, cmp, cpoe, adot, deep_share, deep_cmp, deep_ypa, short_ypa, yac_c, sack, hit, press, int, early_rate, late_rate, vol)
+
+                                        method  r 2018-25  weekly r 2018-25  L2 2018-25  r 2022-25  weekly r 2022-25  L2 2022-25 weeks r>0  sd of proj  tracked-6 r
+                Ridge, 7 inputs (current best)      0.334             0.342       1.710      0.337             0.347       1.694       99%       0.541       -0.320
+   Ridge + KNN comp projection as an 8th input      0.332             0.341       1.711      0.336             0.347       1.695       99%       0.548       -0.334
+           50/50 blend: ridge and weighted KNN      0.315             0.335       1.723      0.321             0.338       1.710       99%       0.439       -0.359
+    KNN team vectors + Vegas context, weighted      0.302             0.323       1.728      0.310             0.328       1.714       99%       0.473       -0.308
+KNN team vectors, stats weighted by importance      0.245             0.275       1.758      0.253             0.278       1.743       93%       0.394       -0.396
+             KNN team vectors, all stats equal      0.245             0.269       1.758      0.250             0.272       1.745       96%       0.389       -0.345
+             KNN offense vector only, weighted      0.219             0.246       1.769      0.242             0.262       1.748       93%       0.348       -0.520
+             KNN defense vector only, weighted      0.107             0.117       1.804      0.076             0.092       1.795       68%       0.213        0.696
+(L2 of guessing the average: 1.813)
+
+K learned from earlier seasons, by test season:
+                                                2018  2019  2020  2021  2022  2023  2024  2025
+KNN team vectors, all stats equal                200   200   200   200   200   200   200   200
+KNN team vectors, stats weighted by importance   400   400   400   400   400   400   400   400
+KNN team vectors + Vegas context, weighted       200   200   100   100   200   200   200   200
+KNN offense vector only, weighted                800   800   800   800   800   800   800   800
+KNN defense vector only, weighted                800   800   400   800   800   800   800   800
+forward L2 by K (weighted team vectors, 2015-2025): K=10: 1.8255  K=25: 1.7824  K=50: 1.7663  K=100: 1.7540  K=200: 1.7491  K=400: 1.7476  K=800: 1.7496
+
+2025 week 2: DET offense at/vs CHI defense. Actual YPA 11.93; KNN projection 7.36; ridge 7.40. Ten most similar past matchups:
+                     matchup  YPA that day  off YPA coming in  off depth of target  def YPA allowed coming in  def pressure rate
+2024 wk16 DET off vs CHI def         10.52               7.60                 6.67                       7.06               0.16
+2024 wk13 DET off vs CHI def          5.58               7.75                 6.75                       7.01               0.16
+ 2024 wk14 DET off vs GB def          6.74               7.61                 6.76                       6.75               0.16
+   2020 wk3 NO off vs GB def          7.78               7.42                 6.51                       6.94               0.14
+  2024 wk9 DET off vs GB def          6.30               7.42                 6.75                       6.79               0.17
+ 2019 wk5 LAC off vs DEN def          4.59               7.66                 8.18                       6.88               0.14
+  2016 wk14 NO off vs TB def          5.49               7.62                 7.39                       7.16               0.14
+2024 wk11 DET off vs JAX def         13.81               7.40                 6.80                       7.02               0.14
+2024 wk12 DET off vs IND def          6.90               7.82                 6.84                       6.86               0.15
+2024 wk18 DET off vs MIN def          6.60               7.81                 6.45                       6.63               0.15
+   those ten averaged 7.43 (their seasons' league level 6.58)
+
+2025 week 18: SF offense at/vs SEA defense. Actual YPA 4.23; KNN projection 7.03; ridge 6.74. Ten most similar past matchups:
+                     matchup  YPA that day  off YPA coming in  off depth of target  def YPA allowed coming in  def pressure rate
+2018 wk16 LAC off vs BAL def          4.47               7.78                 7.97                       5.85               0.16
+2013 wk13 LAC off vs CIN def          6.46               7.45                 7.90                       5.67               0.17
+2016 wk12 ATL off vs ARI def          7.27               7.76                 8.61                       6.15               0.17
+2017 wk13 ATL off vs MIN def          5.97               7.90                 8.65                       6.24               0.17
+  2021 wk5 KC off vs BUF def          4.86               7.71                 8.30                       5.89               0.15
+ 2015 wk8 DAL off vs SEA def          3.59               7.48                 8.10                       5.90               0.16
+ 2024 wk17 DET off vs SF def          8.19               7.78                 6.62                       6.09               0.16
+2014 wk12 DEN off vs MIA def          7.00               7.76                 8.11                       6.06               0.14
+  2015 wk2 GB off vs SEA def          6.92               7.73                 7.97                       5.84               0.17
+2014 wk14 DEN off vs BUF def          9.61               7.57                 8.20                       5.86               0.17
+   those ten averaged 6.43 (their seasons' league level 6.67)
+
+2025 KC passing offense (YPA 6.20, depth of target 7.3, sack rate 0.068) - most similar past offenses by style vector:
+    team  distance  season YPA  depth of target  deep share  sack rate  YAC per catch
+ 2017 SF     3.033       6.562            8.093       0.186      0.077          5.228
+2021 DEN     3.041       6.547            8.298       0.206      0.064          5.049
+2018 JAX     3.075       5.750            7.267       0.187      0.084          5.603
+2024 NYJ     3.186       6.186            6.799       0.178      0.069          5.583
+2017 IND     3.203       5.985            7.833       0.191      0.088          5.553
+2021 WAS     3.212       6.294            7.123       0.187      0.077          5.268
+
+2018 KC passing offense (YPA 8.18, depth of target 8.4, sack rate 0.051) - most similar past offenses by style vector:
+    team  distance  season YPA  depth of target  deep share  sack rate  YAC per catch
+ 2012 GB     2.970       7.150            8.607       0.213      0.076          5.591
+ 2014 GB     2.982       7.865            8.140       0.212      0.057          5.993
+ 2017 NE     3.213       7.417            8.454       0.211      0.051          5.289
+2017 WAS     3.402       7.049            8.283       0.203      0.062          5.714
+ 2016 NE     3.510       7.815            8.083       0.200      0.045          5.838
+2016 ATL     3.668       8.535            8.327       0.196      0.061          5.362
+
+2025 DET passing offense (YPA 7.31, depth of target 6.4, sack rate 0.061) - most similar past offenses by style vector:
+    team  distance  season YPA  depth of target  deep share  sack rate  YAC per catch
+2023 DET     3.067       7.240            6.718       0.148      0.048          5.347
+2018 LAC     3.517       7.781            7.850       0.202      0.059          5.885
+2024 DET     3.519       7.933            6.455       0.170      0.052          6.210
+2020 MIN     3.837       7.513            7.504       0.187      0.067          5.342
+ 2020 NO     3.868       7.158            6.566       0.179      0.050          5.268
+ 2019 SF     3.948       7.647            6.867       0.165      0.077          6.439

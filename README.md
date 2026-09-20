@@ -43,6 +43,28 @@ A single game carries a lot of luck. One pass attempt has a standard deviation o
 
 The betting probabilities are calibrated, but they have only been tested against a stand-in line (the player's own recent average), not real sportsbook lines. Nothing here shows a betting edge.
 
+## Defensive pass YPA allowed: final stack
+
+| Script | What it does |
+|---|---|
+| `def_ypa_full_eval.py` | Leakage test, minimum training seasons, every baseline stat with its week-ahead correlation, model ladder |
+| `ypa_2022_2025.py` | Best stats on 2022 to 2025, tracked matchups, and how projections behave in the top and bottom 5 and 10 percent of actual YPA |
+| `knn_comps.py`, `knn_elite_test.py` | Team-vector KNN (find the most similar past matchups) and a test of whether it helps against elite offenses |
+| `full_stack.py`, `best_stack.py` | 21 level-1 models, ridge meta-model, calibration, head-to-head against baselines |
+| `stack_ranges.py` | Per-game 5th to 95th percentile ranges and blow-up / shutdown probabilities |
+
+Strictly forward, 2020 to 2025, 3,230 games:
+
+| Model | Correlation | Avg weekly correlation | Per-game L2 |
+|---|---|---|---|
+| Guess the prior average | 0.02 | 0.00 | 1.791 |
+| Defense's raw trailing YPA allowed | 0.12 | 0.12 | 1.788 |
+| 23 hand-built defensive variables | 0.11 | 0.11 | 1.778 |
+| Ridge, 7 inputs | 0.33 | 0.34 | 1.688 |
+| Final stack of 21 models, calibrated | 0.33 | 0.35 | 1.687 |
+
+The stack beats every baseline by about 10 standard errors and ties the 7-input ridge model. Six to eight training seasons is the minimum before forward error stops improving. The team-vector KNN gives sensible comps but adds nothing to the stack, including against elite offenses. Knowing the opposing starting quarterback removes about a third of the bias in games with a new starter and does not change accuracy, because the Vegas line already carries it. Per-game ranges are honest: 80.7 percent of results land inside the 10th to 90th range and 90.3 percent inside the 5th to 95th.
+
 ## Running it
 
 ```bash

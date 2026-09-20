@@ -1,0 +1,140 @@
+DEFENSIVE PASS YPA ALLOWED. 7,326 defense-games, 2012-2025 regular season; mean 6.74, sd 1.80
+
+==============================================================================================================
+1. LEAKAGE TEST: corrupt every passing outcome in 2024 week 10, rebuild every feature from scratch, compare
+   week 10: 28 defense-games, features that moved: 0 of 216  (must be 0)
+   week 11: 28 defense-games, features that moved: 154 of 216  (should be many)
+   your 23 baseline variables are rebuilt per (season, week) from plays strictly before that week (pbp_feats.py)
+   shrinkage constants, variable pruning and calibration are all re-estimated inside each training set; game-time wind/temperature are NOT used
+
+==============================================================================================================
+2. HOW FEW SEASONS? Train on only the last N seasons before S, predict S. Same test seasons for every N: 2021-2025 (2,718 games)
+
+FULL MODEL (238 inputs: shrunk levels, Vegas, every defensive + offensive passing stat, your 23)
+ training seasons  training games  in-sample r  forward r  overfit gap  forward RMSE  RMSE vs best  noise (1 s.e.)  avg weekly r
+                1             544       0.5309     0.0117       0.5192    98587.5216    98585.8183      10862.8143        0.2784
+                2            1088       0.5740     0.2920       0.2820        1.7212        0.0179          0.0044        0.3040
+                3            1632       0.5467     0.3014       0.2453        1.7158        0.0125          0.0036        0.3112
+                4            2176       0.5128     0.3052       0.2076        1.7136        0.0103          0.0027        0.3195
+                5            2720       0.4869     0.3154       0.1714        1.7076        0.0044          0.0020        0.3253
+                6            3264       0.4679     0.3229       0.1450        1.7033        0.0000          0.0000        0.3297
+                7            3808       0.4528     0.3228       0.1301        1.7034        0.0001          0.0017        0.3289
+                8            4352       0.4377     0.3220       0.1156        1.7038        0.0006          0.0022        0.3266
+                9            4896       0.4245     0.3224       0.1021        1.7037        0.0004          0.0023        0.3271
+   best N = 6. Smallest N whose forward RMSE is within one standard error of the best: N = 6 seasons (~3,264 games). RMSE of guessing the average: 1.8063
+
+SMALL MODEL (7 inputs: defense + offense shrunk levels, Vegas, home, roof)
+ training seasons  training games  in-sample r  forward r  overfit gap  forward RMSE  RMSE vs best  noise (1 s.e.)  avg weekly r
+                1             544       0.3633     0.0117       0.3517  2453812.7552  2453811.0547     273310.8024        0.3269
+                2            1088       0.3876     0.3154       0.0721        1.7076        0.0072          0.0031        0.3280
+                3            1632       0.3838     0.3162       0.0676        1.7071        0.0067          0.0029        0.3322
+                4            2176       0.3766     0.3165       0.0601        1.7070        0.0065          0.0022        0.3316
+                5            2720       0.3720     0.3221       0.0499        1.7036        0.0031          0.0017        0.3340
+                6            3264       0.3656     0.3213       0.0443        1.7041        0.0036          0.0012        0.3330
+                7            3808       0.3601     0.3250       0.0351        1.7018        0.0013          0.0010        0.3366
+                8            4352       0.3539     0.3261       0.0277        1.7012        0.0007          0.0009        0.3371
+                9            4896       0.3487     0.3273       0.0214        1.7005        0.0000          0.0000        0.3368
+   best N = 9. Smallest N whose forward RMSE is within one standard error of the best: N = 8 seasons (~4,352 games). RMSE of guessing the average: 1.8063
+
+==============================================================================================================
+3. EVERY STAT IN THE BASELINE with its own week-ahead correlation to YPA allowed (all 7,326 games; n this large makes |r| < 0.03 indistinguishable from zero)
+
+YOUR 23 BASELINE DEFENSIVE VARIABLES
+                                r all seasons  r 2012-2018  r 2019-2025               verdict
+def_comp_all_sr                         0.083        0.050        0.106  holds in both halves
+def_lead_d2_cpoe                        0.075        0.065        0.086  holds in both halves
+def_neut_q2_air_yards                   0.063        0.034        0.081  holds in both halves
+def_ns_comp_q1_epa                      0.062        0.052        0.063  holds in both halves
+def_ns_behind_los_yac_std               0.061        0.053        0.065  holds in both halves
+def_h1_cpoe_med                         0.056        0.043        0.066  holds in both halves
+def_pass_only_trail_d3_sr               0.052        0.051        0.056  holds in both halves
+def_blowout_air_std                     0.052        0.050        0.051  holds in both halves
+def_ns_d3_med_air_yards_med             0.049        0.045        0.047  holds in both halves
+def_comp_deep_yac_med                   0.039        0.022        0.055              unstable
+def_trail_q3_complete                   0.039        0.052        0.032  holds in both halves
+def_early_short_yac_med                 0.036        0.044        0.032  holds in both halves
+def_d3_med_inc_air_med                  0.036        0.044        0.024              unstable
+def_backedup_ypa_min                    0.034        0.039        0.038  holds in both halves
+def_lead_comp_air_std                   0.031        0.039        0.027              unstable
+def_ns_d3_long_sr                       0.031        0.028        0.033              unstable
+def_trail_d1_yac                        0.030        0.054        0.018              unstable
+def_ns_cpoe_min                         0.026       -0.012        0.045                 noise
+def_blowout_std_air_comp_mean           0.023       -0.003        0.037                 noise
+def_ns_h2_yac_med                       0.018        0.002        0.032                 noise
+def_yac_median_neutral_q2               0.006        0.036       -0.009                 noise
+def_ns_comp_deep_air_yards_med          0.000       -0.022        0.028                 noise
+def_pass_lead_d1_inc_fd_pct            -0.015       -0.021       -0.007                 noise
+
+SHRUNK LEVELS (k from standard deviations): defense luck sd/attempt 10.08, true sd 0.34, k = 869 attempts, carry-over 0.86 | offense luck sd 9.78, true sd 0.53, k = 336, carry-over 0.63
+core inputs: eb_def +0.129, eb_off +0.220, off_spread +0.245, off_implied +0.314, total_line +0.198, indoors +0.072, off_home +0.071, prev_rate +0.111, prev_adj_rate +0.106, prev_epa +0.095, lg_prev +0.015, week -0.057
+
+NEW DEFENSIVE STATS (what this defense has allowed), by look-back window
+            ~14 games wtd  ~4 games wtd  last 4  season to date
+net                 0.138         0.117   0.097           0.091
+rate                0.135         0.116   0.097           0.088
+adj_rate            0.131         0.112   0.091           0.090
+early_rate          0.127         0.106   0.093           0.079
+epa                 0.119         0.106   0.091           0.078
+adj_epa             0.118         0.105   0.086           0.086
+fd                  0.116         0.104   0.088           0.077
+short_ypa           0.116         0.097   0.081           0.057
+expl                0.115         0.087   0.067           0.058
+neu_rate            0.110         0.089   0.076           0.059
+succ                0.104         0.098   0.087           0.065
+td                  0.097         0.077   0.057           0.057
+press              -0.086        -0.071  -0.049          -0.056
+hit                -0.084        -0.071  -0.048          -0.054
+late_rate           0.082         0.060   0.039           0.041
+sack               -0.081        -0.060  -0.040          -0.059
+cpoe                0.070         0.065   0.057           0.058
+yac_c               0.068         0.048   0.042           0.028
+deep_ypa            0.067         0.052   0.043           0.046
+adot                0.059         0.055   0.045           0.038
+deep_share          0.054         0.049   0.039           0.036
+deep_cmp            0.051         0.042   0.034           0.034
+cmp                 0.043         0.045   0.045           0.041
+vol                -0.033        -0.013  -0.003          -0.059
+int                -0.027        -0.027  -0.024          -0.034
+
+==============================================================================================================
+4. WHICH MODEL? Strict forward 2018-2025 (4,254 games); tracked matchups = the six 2025 games
+                                              features               model  forward r  avg weekly r weeks r>0  per-game L2 (RMSE)  2025 r  tracked-6 r
+                               F E + Vegas, home, roof               ridge      0.334         0.342       96%               1.710   0.391       -0.320
+                               F E + Vegas, home, roof    OLS (no penalty)      0.334         0.342       96%               1.709   0.391       -0.316
+                               F E + Vegas, home, roof               blend      0.335         0.341       98%               1.709   0.395       -0.276
+           G F + all defensive stats + pruned baseline               blend      0.336         0.338       99%               1.709   0.396       -0.168
+                      H G + all offensive stats (full)               blend      0.335         0.336       97%               1.710   0.394       -0.178
+           G F + all defensive stats + pruned baseline               ridge      0.333         0.335       97%               1.710   0.386       -0.141
+                               F E + Vegas, home, roof                lgbm      0.329         0.334       98%               1.712   0.394       -0.233
+                               F E + Vegas, home, roof           KNN k=200      0.328         0.333       96%               1.717   0.396       -0.177
+                      H G + all offensive stats (full)               ridge      0.330         0.330       96%               1.712   0.395       -0.149
+                      H G + all offensive stats (full)                lgbm      0.328         0.330       97%               1.713   0.384       -0.213
+           G F + all defensive stats + pruned baseline                lgbm      0.328         0.328       98%               1.714   0.397       -0.198
+            E defense + opposing offense shrunk levels               ridge      0.259         0.287       93%               1.752   0.313       -0.510
+                      H G + all offensive stats (full)           KNN k=200      0.282         0.286       97%               1.742   0.338       -0.435
+            E defense + opposing offense shrunk levels               blend      0.257         0.280       93%               1.753   0.309       -0.482
+                      H G + all offensive stats (full)    OLS (no penalty)      0.281         0.280       93%               1.756   0.383       -0.167
+            E defense + opposing offense shrunk levels                lgbm      0.247         0.262       92%               1.758   0.297       -0.426
+D all defensive stats + pruned baseline (defense-only)               ridge      0.147         0.132       74%               1.794   0.201        0.747
+                                A defense shrunk level shrunk level itself      0.126         0.124       75%               1.801   0.177        0.712
+D all defensive stats + pruned baseline (defense-only)               blend      0.142         0.124       74%               1.795   0.182        0.712
+                   C your baseline, pruned in training               ridge      0.127         0.123       74%               1.799   0.237        0.781
+                     B your 23 baseline defensive vars               ridge      0.120         0.120       77%               1.800   0.235        0.783
+                     B your 23 baseline defensive vars    OLS (no penalty)      0.122         0.117       75%               1.801   0.259        0.830
+                   C your baseline, pruned in training               blend      0.120         0.115       74%               1.800   0.227        0.838
+                     B your 23 baseline defensive vars               blend      0.114         0.111       68%               1.801   0.227        0.810
+D all defensive stats + pruned baseline (defense-only)                lgbm      0.121         0.100       67%               1.801   0.146        0.665
+                   C your baseline, pruned in training                lgbm      0.104         0.099       69%               1.805   0.198        0.842
+                     B your 23 baseline defensive vars                lgbm      0.099         0.094       65%               1.807   0.201        0.804
+                     B your 23 baseline defensive vars           KNN k=200      0.088         0.075       67%               1.806   0.191        0.479
+(per-game L2 of guessing the prior seasons' average: 1.813; 141 weekly vectors)
+
+best on week-ahead correlation: F E + Vegas, home, roof / ridge. Its tracked matchups:
+defense  week  vs  projected  actual
+     LV    12 CLE       5.70   10.80
+    DAL    15 MIN       6.65   10.09
+    CHI     2 DET       7.40   11.93
+     NE     2 MIA       6.60    8.51
+    SEA    18  SF       6.74    4.23
+    MIN    13 SEA       7.50    4.27
+chance check on the tracked-6 column: spread of r across random sets of six 2025 games for this same model = 0.40 (so differences smaller than that between models mean nothing)
