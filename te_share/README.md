@@ -6,9 +6,37 @@ Data: nflverse play-by-play, weekly rosters, injury reports, PFR snap counts, an
 Nothing is fit on 2026. Each forecast season S is fit on 2013..S-1, and 2026 uses a model fit on 2013–2025.
 2026 games through week W-1 enter only as pregame features (season-to-date shares, roster, injury report), which follows the same timing rule as the original project.
 
+## Quickstart
+Needs Python 3.11 or newer. On a Mac, LightGBM also needs OpenMP: `brew install libomp`.
+
+```
+git clone https://github.com/AdityaPGuru/nfl-projections.git
+cd nfl-projections/te_share
+python -m pip install -r requirements.txt
+```
+
+**Run right away (no download).** The built stats table `data/team_games.parquet` is in the repo, covering 2012 through 2026 Week 5 plus the Week 6 schedule:
+```
+python model.py            # forward-season evaluation, prints every table in this README
+python predict_week.py 6   # Week 6 projections -> results/week6_2026_projections.csv
+```
+
+**Each new week.** Pull fresh nflverse data, rebuild the table, then project. This takes a few minutes the first time (about 290 MB). After that, only the current season is downloaded again.
+```
+python fetch_data.py
+python build.py
+python predict_week.py 7
+```
+The upcoming week's projections are best after Friday's final injury reports. nflverse usually posts completed games within a day.
+
+**Exact reproduction.** `python fetch_data.py --snapshot` downloads the raw files behind these results (2026 through Week 5) from the [repo release](https://github.com/AdityaPGuru/nfl-projections/releases/tag/te-share-data-2026-10-15). Then `python build.py && python model.py` reproduces the numbers below.
+
+Data comes from [nflverse](https://github.com/nflverse/nflverse-data) (CC-BY 4.0).
+
 ## Files
+- `fetch_data.py`: downloads raw nflverse data into `data/`
 - `build.py`: team-game table and pregame features → `data/team_games.parquet`
-- `model.py`: forward-season evaluation of all models, plus diagnostics → `results/forward_predictions.csv`, `results/model_out_v3.txt`
+- `model.py`: forward-season evaluation of all models, plus diagnostics → `results/forward_predictions.csv`, `results/model_out_v4.txt`
 - `predict_week.py N`: 2026 week N projections → `results/weekN_2026_projections.csv`
 - `results/2026_wk1-5_projections_vs_actual.csv`: every 2026 game so far, projected vs actual
 
