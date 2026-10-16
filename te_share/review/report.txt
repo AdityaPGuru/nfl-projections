@@ -1,0 +1,81 @@
+I found two real leakage issues, both small enough that they are very unlikely to explain the headline correlation advantage. The principal cumulative statistics, forward-season fitting, league-relative construction, spread convention, and Week 6 slate are otherwise sound.
+
+## Findings
+
+| Severity | Location | Finding | Headline impact |
+|---|---|---|---|
+| Medium | [build.py:29](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:29) | Receiver position is assigned using the mode over the player’s entire season. A Week W target or YTD statistic can therefore depend on roster positions recorded after Week W. This violates the stated strict information cutoff. | Almost certainly negligible. There are 978 player-week position disagreements, but only 61 affected targets and 315 receiving yards over the entire dataset; TE↔WR/RB changes account for only a subset. The published correlations should not materially change, though an exact rebuild is needed to prove the final decimals. |
+| Low | [model.py:62](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:62) | Same-week league centering of `te_rel_prod` and `te_prevypg_avail` uses every team’s weekly injury-derived availability. For an early-week game, such as Thursday night, some other teams’ final reports may not yet have been published. That is small cross-game look-ahead. | Expected immaterial; it only changes a league-wide centering constant and affects a small number of early-week games. |
+| Low / labeling | [model.py:111](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:111) | “Fixed-weight style” is fixed across weeks within each forecast-season fit, but it is not one frozen model across all reported seasons: coefficients and ridge alpha are refit for every S. | Does not invalidate the reported comparison, but “fixed-weight model” should be read as a model class/structure, not one globally frozen coefficient vector. |
+
+## Claims checked
+
+1. Pregame feature leakage
+
+The principal cumulative logic passes.
+
+- Offense YTD at [build.py:85-97](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:85) uses `cumsum().shift(1)` inside `(season, posteam)`.
+- Defense YTD at [build.py:99-102](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:99) is correctly aligned. Sorting `dd` preserves the original indices; `ytd()` returns those indices; `tg.join(d)` aligns by index. I independently recomputed every defense and offense cumulative column: maximum difference was exactly `0.0`.
+- League YTD at [build.py:124-128](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:124) is correctly shifted within season. Lines 120–123 are redundant and temporarily contain a cross-season-shift hazard, but those columns are discarded and rebuilt correctly before merging.
+- Player production `merge_asof` at [build.py:149-155](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:149) shifts observed games forward one week, so Week W receives production only through W−1.
+- Snap `merge_asof` at [build.py:187-196](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/build.py:187) likewise shifts by one week and is grouped by season/team.
+- Exact `d_n` at [model.py:37-41](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:37) counts played defense games, shifts their availability to the next numbered week, and correctly handles byes through backward as-of lookup.
+
+Exception: the full-season receiver-position mode and minor same-week injury centering leakage described above.
+
+2. No 2026 outcome fitting
+
+Confirmed.
+
+- Forward evaluation trains on `season < S` at [model.py:179-182](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:179).
+- Week 6 explicitly trains only on played rows through 2025 at [predict_week.py:9-11](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/predict_week.py:9).
+- Calibration at [model.py:143-159](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:143) uses leave-one-season-out predictions made solely from the outer training set. For the 2026 run, that outer set ends in 2025.
+- `_lg_all` reads the full file, but each `lg_gap` explicitly filters to seasons `< S`; 2026 results cannot enter the 2026 value.
+- No 2026 outcomes enter ridge selection, EB `k`, GBM fitting, medians, or calibration.
+
+The inner calibration folds are ordinary leave-one-season-out rather than chronological folds: a held-out early training season can be predicted using later—but still pre-forecast—training seasons. That matches the documented claim and does not leak the outer test season.
+
+3. Late-season width diagnostic
+
+The calculations are correct for the stated pooled diagnostic:
+
+- Prediction width is the sample standard deviation within each week bucket.
+- Calibration slope is OLS slope of actual on projected, implemented as `np.polyfit(projected, actual, 1)[0]`.
+- A slope above 1 correctly means predictions are too narrow.
+
+The result supports the claim:
+
+- Naive SD declines from `0.0501` in Weeks 1–4 to `0.0463` in Weeks 13–18.
+- EB SD rises from `0.0464` to `0.0530`.
+- Naive late calibration slope is `1.148`; EB is `1.045`.
+
+Caveat: this is pooled across seasons and games, not a within-season or team-balanced decomposition. It accurately describes the prediction population but does not by itself prove that every individual team’s uncertainty evolves that way.
+
+4. Relative-to-league target and drift
+
+No leakage or erroneous double-counting found.
+
+- `y_rel = y - lg_prev` and all share predictors are centered on the same prior-season league level.
+- Final predictions add `lg_prev` back exactly once.
+- `lg_gap` represents prior-season league level minus the mean of all league seasons before S, including S−1 in that historical mean. That is a legitimate reversion feature, though the inclusive reference mean slightly mechanically dampens the gap.
+- `lg_drift` is current-season league share through W−1 minus `lg_prev`.
+- Both can appear alongside centered team shares without algebraic duplication: `lg_gap` describes between-season regime/reversion, while `lg_drift` describes observed within-season movement.
+
+`_lg` at [model.py:53](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/te_share/model.py:53) is unused dead code, not a correctness problem.
+
+5. Mapping, abbreviations, spread, Week 6
+
+- Position mapping has the look-ahead issue noted above. Its fallback to the static players table is otherwise reasonable.
+- Team normalization is internally consistent: all 32 current abbreviations are present, no duplicate team-game keys exist, and every schedule row has a reciprocal opponent row.
+- Mapping both `STL` and `LAR` to `LA` is consistent with this dataset’s current Rams abbreviation.
+- Spread sign is correct. In the supplied schedule, positive `spread_line` corresponds to home expected margin: its correlation with actual home margin is `+0.430`, and games with positive spread average a positive home result. Therefore `implied = total/2 + spread/2` is correct for the offense-specific spread.
+- Week 6 contains 28 distinct teams, 14 reciprocal games, no duplicated teams, and no missing spread, total, prior-share, defense-share, or roster-production fields. The four absent teams are consistent with byes.
+- The displayed Week 6 offense and defense YTD values are through Week 5.
+
+## Headline numbers
+
+The `0.3947` versus `0.3580` forward comparison and `0.3074/0.3078` versus `0.2656` 2026 comparison are generated by genuinely forward outer fits. I found no defect likely to reverse or materially manufacture those gaps.
+
+The position-mode leak technically contaminates both targets and historical features, so the results cannot be called perfectly leakage-free. Given only 315 receiving yards are attached to player-week position disagreements across the full dataset, its likely effect is at most in the last few decimal places, not the roughly `0.0367` forward-r or `0.0418` 2026-r advantage.
+
+VERDICT: ISSUES

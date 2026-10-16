@@ -1,0 +1,9 @@
+Adversarially review this NFL TE receiving-yards-share model in the current directory (build.py, model.py, predict_week.py; outputs in results/model_out_v3.txt and results/week6_out.txt). Read-only: do not edit files.
+
+Target: per offense team-game, TE receiving yards / all team receiving yards (regular season). Claims to verify or break:
+1. No leakage: every feature for (season S, week W) uses only seasons < S or weeks < W of S, plus pregame info (weekly roster status, final injury report Out/Doubtful, Vegas lines). Check every cumsum/shift/merge_asof in build.py and the d_n/lg_ytd/lg_gap logic in model.py. Note pandas groupby-transform on rows sorted by (posteam, season, week); the defense ytd uses a re-sorted frame then .join on index - confirm alignment is correct.
+2. No 2026 outcomes are used to fit anything: forward loop trains on seasons < S; calibration in fit_predict is leave-one-season-out within training only.
+3. "Fixed-weight style" (naive) projections narrow late in the season while EB projections widen; calibration slope by week bucket. Is the diagnostic computed correctly?
+4. Relative-to-league target (y - prior-season league share) and the lg_gap / lg_drift features: any leak or double-counting?
+5. Any bug in position mapping (receiver positions by season mode), team abbreviation normalization, spread sign (implied = total/2 + spread/2 where spread is posteam expected margin), or week 6 rows.
+List concrete bugs with file:line, severity, and whether they change the headline numbers (forward r 0.394 vs 0.358 for the fixed-weight model; 2026 r 0.308 vs 0.266). End with VERDICT: CLEAN or VERDICT: ISSUES.
