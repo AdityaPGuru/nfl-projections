@@ -1,0 +1,48 @@
+drop off_top_qb_success_rate_ytd -1.0677
+drop def_lead_d2_cpoe -1.0653
+drop sq__off_top_qb_yac_epa_per_dropback_ytd -1.0636
+drop def_pass_volume -1.0623
+drop def_ns_behind_los_yac_std -1.0608
+drop def_explosive_rate_behind_los -1.0589
+drop def_comp_deep_yac_med -1.0579
+drop off_success_rate_ytd -1.0571
+drop def_opp_explosive_pass_rate_ytd_faced_ytd -1.0563
+drop off_xpass_ytd -1.0555
+drop def_trail_d1_yac -1.0549
+drop def_neut_q2_air_yards -1.0543
+drop def_ns_comp_deep_air_yards_med -1.0538
+drop ix__off_top_receiver_target_share_ytd__X__def_hit_red_zone_pass_rate_ytd -1.0534
+drop def_trail_q3_complete -1.0531
+drop def_epa_neutral_behind_los -1.053
+drop sq__off_top_qb_yac_epa_per_dropback_ytd -1.0628
+drop off_ngs_top_qb_completion_percentage_ytd -1.0605
+drop def_lead_d2_cpoe -1.0584
+drop off_top_qb_success_rate_ytd -1.0565
+drop def_pass_volume -1.0547
+drop off_ngs_top_qb_avg_completed_air_yards_ytd -1.0529
+drop def_ns_behind_los_yac_std -1.0515
+drop def_explosive_rate_behind_los -1.0497
+drop def_comp_deep_yac_med -1.0487
+drop c_qb_ypa -1.0476
+drop def_opp_explosive_pass_rate_ytd_faced_ytd -1.0469
+drop def_trail_d1_yac -1.0462
+drop ix__off_top_receiver_target_share_ytd__X__def_hit_red_zone_pass_rate_ytd -1.0456
+drop off_explosive_pass_rate_ytd -1.045
+drop def_ns_comp_deep_air_yards_med -1.0446
+drop off_top_qb_explosive_pass_rate_ytd -1.0441
+drop off_xpass_ytd -1.0437
+drop def_neut_q2_air_yards -1.0433
+drop def_epa_neutral_behind_los -1.0431
+drop c_qb_sack -1.043
+drop def_trail_q3_complete -1.0429
+                                                                     r_2016_2025  r_2023_2025     MAE    RMSE  d_r vs clean33      se   d_MAE  se_MAE
+clean 33                                                                  0.3413       0.3713  1.4130  1.8142          0.0000  0.0000  0.0000  0.0000
+his 35 incl wind/temp                                                     0.3471       0.3736  1.4088  1.8095          0.0058  0.0020 -0.0042  0.0014
+clean 33 + starting-QB block                                              0.3424       0.3712  1.4113  1.8132          0.0011  0.0020 -0.0017  0.0015
+compact 10 (level stats + Vegas + starting QB)                            0.3489       0.3797  1.4094  1.8077          0.0076  0.0044 -0.0036  0.0030
+backward-pruned, no starter-QB fields (17 terms, chosen on 2016-22)       0.3485       0.3695  1.4090  1.8094          0.0072  0.0023 -0.0040  0.0016
+compact 7 (no starter-QB fields)                                          0.3464       0.3738  1.4120  1.8097          0.0051  0.0043 -0.0010  0.0030
+backward-pruned (16 terms, chosen on 2016-22)                             0.3540       0.3737  1.4061  1.8055          0.0127  0.0033 -0.0069  0.0022
+kept (no QB): ['def_blowout_std_air_comp_mean', 'def_comp_all_sr', 'def_backedup_ypa_min', 'def_blowout_air_std', 'def_qb_hit_rate_q4', 'def_td_rate_behind_los', 'def_yac_epa_per_dropback_ytd', 'def_rest_days', 'off_explosive_pass_rate_ytd', 'off_top_qb_explosive_pass_rate_ytd', 'off_top_qb_yac_per_completion_ytd', 'off_pass_rate_ytd', 'off_pass_oe_ytd', 'off_ngs_top_qb_avg_completed_air_yards_ytd', 'off_ngs_top_qb_completion_percentage_ytd', 'off_spread_line', 'total_line']
+kept: ['def_blowout_std_air_comp_mean', 'def_comp_all_sr', 'def_backedup_ypa_min', 'def_blowout_air_std', 'def_qb_hit_rate_q4', 'def_td_rate_behind_los', 'def_yac_epa_per_dropback_ytd', 'def_rest_days', 'off_success_rate_ytd', 'off_top_qb_yac_per_completion_ytd', 'off_pass_rate_ytd', 'off_pass_oe_ytd', 'off_spread_line', 'total_line', 'c_qb_epa', 'c_qb_new']
+dropped: ['sq__off_top_qb_yac_epa_per_dropback_ytd', 'off_ngs_top_qb_completion_percentage_ytd', 'def_lead_d2_cpoe', 'off_top_qb_success_rate_ytd', 'def_pass_volume', 'off_ngs_top_qb_avg_completed_air_yards_ytd', 'def_ns_behind_los_yac_std', 'def_explosive_rate_behind_los', 'def_comp_deep_yac_med', 'c_qb_ypa', 'def_opp_explosive_pass_rate_ytd_faced_ytd', 'def_trail_d1_yac', 'ix__off_top_receiver_target_share_ytd__X__def_hit_red_zone_pass_rate_ytd', 'off_explosive_pass_rate_ytd', 'def_ns_comp_deep_air_yards_med', 'off_top_qb_explosive_pass_rate_ytd', 'off_xpass_ytd', 'def_neut_q2_air_yards', 'def_epa_neutral_behind_los', 'c_qb_sack', 'def_trail_q3_complete']

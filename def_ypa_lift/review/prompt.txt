@@ -1,0 +1,10 @@
+Adversarial review, read-only. Directory: def_ypa_lift/ inside an NFL projections repo. Data in ../te_share/data (nflverse pbp 2012-2026, games.csv schedules, injury reports).
+
+Goal: a friend's R baseline (lm, 35 terms, defensive net yards per dropback allowed, expanding week-ahead refit: train on seasons < s plus weeks < w of season s) is rebuilt in build.py; evaluate.py scores it (mean per-season r 2016-2025, mean r 2023-2025, MAE) and screens added pregame candidate stats (prefix c_). compact.py tests group adds, pruning, and paired week-resampled standard errors.
+
+Claims to attack:
+1. No feature in rows.parquet uses information from the row's own game or later (leak_test.py scrambles one week and finds 0 of 104 features move). Look for subtler leaks: window() in build.py, the top_qb choice, c_qb_new (opp_qb_id from games.csv home_qb_id/away_qb_id = the QB who actually started; is that pregame?), injury report joins, referee window, opponent-adjusted features, def_opp_explosive_pass_rate_ytd_faced_ytd.
+2. The evaluation harness in evaluate.py matches the R protocol (median fill from training rows, OLS with intercept, per-week refit, raw prediction).
+3. Conclusions: (a) game-day wind/temp in his baseline are not pregame-available; (b) no single pregame candidate adds more than ~0.002 to mean season r; (c) forward selection on 2016-2022 does not transfer to 2023-2025.
+Also check: target definition bugs, merge duplication (row counts), team-code mismatches between pbp and games.csv, sign of off_spread_line (nflverse spread_line > 0 means home favored).
+Read results_*.csv and eval_log.txt. You may run python3 (with -W ignore) to check things, but do not modify files. Report concrete bugs with file:line and whether each changes the conclusions. End with VERDICT: SOUND or VERDICT: BUGS-FOUND.

@@ -1,0 +1,86 @@
+Found several concrete issues. The core expanding-fit evaluation is implemented correctly, but the “all candidates are pregame-clean” claim is not established, and injury features are demonstrably joined incorrectly for relocated teams.
+
+## Findings
+
+1. **Injury team codes are mismatched for relocated franchises** — [build.py:228](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:228)
+
+The injury tables use historical codes:
+
+- `OAK` through 2019
+- `SD` through 2016
+- `STL` through 2015
+
+The play-by-play/target rows use normalized codes `LV`, `LAC`, and `LA`. The joins at lines 230–232 perform no normalization, so those teams receive zero injuries for the affected seasons.
+
+This does not create leakage, but it makes five candidate injury variables wrong for three franchises over multiple seasons. It probably does **not** overturn conclusion (b): every injury feature was already far below the ~0.002 threshold. It does mean their reported individual results are not trustworthy as measurements of the intended injury features.
+
+2. **The starting-QB candidate uses a retrospective actual-starter field without proving its availability at prediction time** — [build.py:96](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:96), [build.py:103](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:103), [build.py:208](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:208)
+
+`home_qb_id`/`away_qb_id` identify the player recorded as the game’s starter. They are complete for every checked game and agree with the game’s leading passer about 96.8% of the time, consistent with retrospective game metadata rather than a timestamped forecast or depth-chart source.
+
+The starter may have been publicly known before many games, especially immediately before kickoff, but the file itself provides no “known as of” timestamp. Therefore:
+
+- For a genuinely week-ahead forecast, this is look-ahead leakage.
+- For a prediction made after inactive lists/starting lineups are announced, it can be legitimate—but that forecast cutoff must be specified and supported with a historical as-of source.
+
+This matters because `c_qb_epa` is the best reported single addition at `+0.001892`, almost exactly the claimed ~0.002 ceiling. Conclusion (b) remains numerically true for the existing dataset, but its strongest result is not established as operationally pregame. `c_qb_new` has the same problem at [build.py:220](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:220).
+
+3. **The leakage test cannot validate schedule/QB/injury availability** — [leak_test.py:15](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/leak_test.py:15)
+
+The test permutes selected PBP outcome columns only. It does not perturb or timestamp-test:
+
+- `home_qb_id` / `away_qb_id`
+- injury reports
+- wind or temperature
+- referee assignment
+- spreads, totals, moneylines
+- play inclusion fields such as `pass_attempt`
+- schedule metadata generally
+
+Thus “0 of 104 features move” only shows that the scrambled PBP values do not affect that week’s features. It does **not** prove that all 104 features were historically available before kickoff. This directly weakens claim 1, though I found no own-game arithmetic leak in `window()`.
+
+4. **Some injury snapshots were modified after the game** — [build.py:223](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:223)
+
+The code takes the final stored row without checking `date_modified` against kickoff. Six qualifying Out/Doubtful records have modification dates after gameday, including KC players after the 2020 Week 6 Monday game and BAL’s Kyle Van Noy after the 2024 opener.
+
+The underlying status may already have been public before kickoff, so this is not proof that the value changed postgame. But the final-snapshot join cannot guarantee historical pregame availability. The quantitative impact is tiny and unlikely to alter any headline conclusion.
+
+5. **Opponent-adjusted features use the game’s own outcome as a fallback expectation** — [build.py:202](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:202)
+
+When an opponent has no incoming YPA estimate:
+
+```python
+t3.c_off_ypa.fillna(t3.yds / t3.n)
+```
+
+sets that game’s residual to exactly zero. The same pattern appears at lines 205–207 for offense adjustment.
+
+Because `rate_feats()` subsequently lags the game, this does not leak that outcome into its own row. It is nevertheless a target-derived fallback that silently discards early-season/prior-history games rather than applying a genuine pregame league prior. The resulting opponent-adjusted candidates do not implement the documented concept cleanly. Both performed poorly, so this does not change conclusions (b) or (c).
+
+6. **The compact/pruning and paired-SE run did not complete**
+
+`compact_log.txt` stops after two drop messages, while `results_compact.csv` and `pruned_terms.csv` are absent. Therefore there is no completed artifact supporting the claimed group-add, pruning, or paired-standard-error results. The code exists, but the tests were not successfully completed in the supplied directory.
+
+Also, the bootstrap at [compact.py:24](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/compact.py:24) samples season-week keys globally rather than stratifying within season. That gives each replicate a variable and uneven number of weeks per season while still averaging ten seasonal correlations. A within-season clustered bootstrap would better match the estimand.
+
+## Checks that passed
+
+- `window()` correctly combines the complete previous regular season with only weeks `< w` from the current season. I found no own-week contamination there.
+- `top_qb` is chosen solely from the prior-season/current-prior-week window; it does not use the row’s game.
+- The referee window is properly lagged.
+- `def_opp_explosive_pass_rate_ytd_faced_ytd` excludes the current opponent/game. Its denominator counts prior games even when the opponent rate is missing, which is a mild definition defect, not leakage.
+- `evaluate.py` correctly performs per-week expanding refits, training-only median imputation, OLS with an explicit intercept, and unbounded/raw predictions.
+- Scoring is mean within-season correlation, plus pooled row-level MAE/RMSE, as documented.
+- Row integrity is clean: 6,814 rows, 3,407 games, exactly two offense-defense rows per game, and zero duplicate `(game_id, posteam, defteam)` keys.
+- All selected pass attempts have nonmissing `yards_gained`; all 17,421 sacks are included by `pass_attempt == 1`. The stated net passing yards per attempt-plus-sack target is therefore implemented consistently.
+- PBP and schedule game joins are complete. PBP codes are normalized, although that normalization was missed for injuries.
+- `off_spread_line` has the correct sign. In this file positive `spread_line` denotes the home favorite; multiplying by `+1` for the home offense and `-1` for the away offense is correct.
+- Conclusion (c) is supported by the completed forward-selection output: the selected ten features improve 2016–2025 mean correlation from `0.3413` to `0.3456`, but reduce 2023–2025 correlation from `0.3713` to `0.3546`.
+
+## Conclusions
+
+- **(a) Wind/temp:** Defensible only for a week-ahead cutoff. Exact archived game-day observations are unavailable a week ahead, but weather forecasts and near-kickoff observations are pregame information. The wording should specify “exact realized fields are unavailable at the forecast cutoff,” not categorically “not pregame-available.”
+- **(b) No single candidate above ~0.002:** Numerically true in the current output—the maximum is `0.001892`. However, that maximum comes from the questionable retrospective QB-starter join, and several injury candidates are misbuilt.
+- **(c) Forward selection does not transfer:** Supported by the supplied completed evaluation. The holdout correlation declines materially. No completed paired-SE result is present, so statistical uncertainty around that decline was not successfully reported.
+
+**VERDICT: BUGS-FOUND**
