@@ -1,0 +1,27 @@
+Found documentation/provenance bugs, but no remaining play-by-play outcome leak in the recommended 14-term model.
+
+- [SPEC.md:44](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:44) incorrectly says all Week 7 starter IDs are projected as of the snapshot. NE–CHI had already been played on October 22, so its `home_qb_id`/`away_qb_id` values can be postgame actual-starter values. Consequently, the 17-term NE–CHI projections are not genuinely pregame-as-of-before-kickoff. This reinforces the documented warning against the 17-term model; it does not affect the recommended 14-term conclusion.
+
+- [SPEC.md:3](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:3) and [SPEC.md:82](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:82) say the Week 7 build uses only completed Weeks 1–6. That is true for play-derived windows, but not literally for every input: Week 7 schedule data supplies starter IDs and betting lines, and the NE–CHI schedule record was observed after that game. No Week 7 outcome enters the 14 terms directly, but the provenance statement should be narrower.
+
+- [README.md:54](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/README.md:54) calls the 186 scored 2026 observations “games.” They are 186 offense-defense rows, corresponding to 93 games. No metric or conclusion changes.
+
+- [week7/project.py:1](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/week7/project.py:1) still calls this a “16-term model”; the implementation correctly uses 14 and 17 terms. Documentation only.
+
+- Two “exact definitions” are slightly overstated:
+  - [SPEC.md:58](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:58) and [SPEC.md:73](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:73) say “all non-sack attempts,” whereas [build.py:119](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:119) and [build.py:131](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:131) actually require non-null `air_yards`. Non-sack plays with missing air yards are excluded.
+  - `c_qb_epa` at [build.py:220](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:220) counts every passer-attributed dropback in the denominator but converts missing EPA to zero through [build.py:47](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:47). [SPEC.md:35](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/SPEC.md:35) should state that convention. Likely numerically immaterial.
+
+Checks that passed:
+
+- The frozen snapshot contains 171 plays from `2026_07_NE_CHI`, but `week7/out/rows.parquet` has 28 Week 7 rows with zero outcomes. Every play-derived feature is constructed after [build.py:27](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:27) removes Week 7 and later plays.
+- The forecast table has only completed outcomes through Week 6: 186 2026 offense-defense rows in Weeks 1–6 and 28 outcome-null Week 7 rows.
+- All 6,814 historical rows and all 123 historical columns in the forecast build match `data/rows.parquet` exactly.
+- `allow_exact_matches=False` at [build.py:237](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:237) is correct: week-granularity features must not select a passer from the target week. It correctly crosses byes and season boundaries.
+- The repaired top-QB grid at [build.py:174](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:174)–[build.py:176](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/def_ypa_lift/build.py:176) prevents absence-induced missingness. Team changes are handled correctly: top-QB identity is selected from dropbacks for the offense, while that selected player’s statistics pool his dropbacks for any team.
+- All 14 term definitions otherwise match their masks, windows, and denominators in `build.py`.
+- README/SPEC coefficients, scores, Week 7 values, and projections match the CSVs and logs at the displayed precision.
+- All 14 Week 7 terms are populated; no training-median fill was needed.
+- The substantive conclusion remains intact: the 14-term model is the appropriate version, while the 17-term schedule-starter comparison contains retrospective starter information.
+
+VERDICT: BUGS-FOUND

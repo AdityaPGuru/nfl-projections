@@ -4,7 +4,8 @@ Backward elimination is judged on 2016-2022 only; 2023-2025 is the untouched che
 import numpy as np, pandas as pd, warnings
 import evaluate as ev
 warnings.filterwarnings("ignore")
-QB = ["c_qb_epa", "c_qb_ypa", "c_qb_sack", "c_qb_new"]
+QB = ["c_qb_epa", "c_qb_ypa", "c_qb_sack", "c_qb_new"]                  # schedule-listed starter (filled in after the game historically)
+QBPRE = ["c_qb_epa_pre", "c_qb_ypa_pre", "c_qb_sack_pre", "c_qb_new_pre"]  # pregame rule: leading passer in the team's last completed game
 COMPACT = ["off_spread_line", "total_line", "c_def_ypa", "c_def_epa", "c_off_ypa", "c_off_epa", "c_qb_epa", "c_qb_ypa", "c_qb_sack", "indoors"]
 
 
@@ -37,10 +38,13 @@ if __name__ == "__main__":
     P["clean 33"] = ev.forward(ev.BASE33)
     P["his 35 incl wind/temp"] = ev.forward(ev.BASE35)
     P["clean 33 + starting-QB block"] = ev.forward(ev.BASE33 + QB)
+    P["clean 33 + pregame-QB block"] = ev.forward(ev.BASE33 + QBPRE)
     P["compact 10 (level stats + Vegas + starting QB)"] = ev.forward(COMPACT)
     kept0, dropped0 = backward(ev.BASE33)
     P[f"backward-pruned, no starter-QB fields ({len(kept0)} terms, chosen on 2016-22)"] = ev.forward(kept0)
     P["compact 7 (no starter-QB fields)"] = ev.forward([c for c in COMPACT if not c.startswith("c_qb")])
+    keptp, droppedp = backward(ev.BASE33 + QBPRE)
+    P[f"backward-pruned, pregame-QB block ({len(keptp)} terms, chosen on 2016-22)"] = ev.forward(keptp)
     kept, dropped = backward(ev.BASE33 + QB)
     P[f"backward-pruned ({len(kept)} terms, chosen on 2016-22)"] = ev.forward(kept)
     rows = {}
@@ -48,6 +52,7 @@ if __name__ == "__main__":
         sc = ev.score(p); g = paired(P["clean 33"], p) if k != "clean 33" else (0, 0, 0, 0)
         rows[k] = {**{x: sc[x] for x in ["r_2016_2025", "r_2023_2025", "MAE", "RMSE"]}, "d_r vs clean33": g[0], "se": g[1], "d_MAE": g[2], "se_MAE": g[3]}
     t = pd.DataFrame(rows).T; print(t.round(4).to_string()); t.to_csv(f"{ev.HERE}/results_compact.csv")
+    print("kept (pregame QB):", keptp); pd.Series(keptp).to_csv(f"{ev.HERE}/pruned_terms_pregameqb.csv", index=False, header=["stat"])
     print("kept (no QB):", kept0); print("kept:", kept); print("dropped:", dropped)
     pd.Series(kept0).to_csv(f"{ev.HERE}/pruned_terms_noqb.csv", index=False, header=["stat"])
     pd.Series(kept).to_csv(f"{ev.HERE}/pruned_terms.csv", index=False, header=["stat"])

@@ -1,0 +1,16 @@
+term,coef
+(intercept),-0.7390843680318577
+def_blowout_std_air_comp_mean,-0.047453734879002535
+def_backedup_ypa_min,0.015529876019852841
+def_blowout_air_std,0.07688772661559687
+def_qb_hit_rate_q4,-1.8715193534100467
+def_epa_neutral_behind_los,0.06415649637818838
+def_td_rate_behind_los,5.34332285425823
+def_yac_epa_per_dropback_ytd,-1.4217856528023405
+def_rest_days,-0.020548120927752565
+off_success_rate_ytd,3.189814408586923
+off_top_qb_yac_per_completion_ytd,0.10762627133726567
+off_pass_rate_ytd,2.749647188210049
+off_pass_oe_ytd,-0.04616707070105189
+off_spread_line,0.07702804129078679
+total_line,0.0878471179805585

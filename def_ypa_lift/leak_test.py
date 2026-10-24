@@ -13,13 +13,24 @@ def corrupted():
     m = np.zeros(len(p), bool)
     for s, w in WEEKS: m |= (p.season == s).values & (p.week == w).values
     for c in ["yards_gained", "air_yards", "yards_after_catch", "epa", "yac_epa", "success", "cpoe", "complete_pass", "sack", "qb_hit", "interception",
-              "pass_touchdown", "first_down", "penalty_yards", "pass_oe", "xpass", "receiver_player_id"]:
+              "pass_touchdown", "first_down", "penalty_yards", "pass_oe", "xpass", "receiver_player_id", "passer_player_id"]:
         v = p.loc[m, c].to_numpy(); p.loc[m, c] = rng.permutation(v)
+    p.loc[m, "passer_player_id"] = "FAKE_" + p.loc[m, "passer_player_id"].astype(str)   # who played this week must not matter either
     return p
 
 
 if __name__ == "__main__":
     clean = pd.read_parquet(f"{HERE}/data/rows.parquet")
+    # schedule starter fields for the scrambled week are faked too (they are filled in after the game)
+    tmp = os.path.join(HERE, "data_leaktest_in"); os.makedirs(f"{tmp}/aux", exist_ok=True)
+    for sub in ("pbp",):
+        if not os.path.exists(f"{tmp}/{sub}"): os.symlink(os.path.join(build.DATA, sub), f"{tmp}/{sub}")
+    for fn in os.listdir(f"{build.DATA}/aux"):
+        if fn != "games.csv" and not os.path.exists(f"{tmp}/aux/{fn}"): os.symlink(os.path.abspath(f"{build.DATA}/aux/{fn}"), f"{tmp}/aux/{fn}")
+    g = pd.read_csv(f"{build.DATA}/aux/games.csv"); gm = np.zeros(len(g), bool)
+    for s, w in WEEKS: gm |= (g.season == s).values & (g.week == w).values
+    for c in ("home_qb_id", "away_qb_id"): g.loc[gm, c] = "FAKE_" + g.loc[gm, c].astype(str)
+    g.to_csv(f"{tmp}/aux/games.csv", index=False); build.DATA = tmp
     build.load = corrupted; build.OUT = os.path.join(HERE, "data_leaktest"); os.makedirs(build.OUT, exist_ok=True); build.main()
     bad = pd.read_parquet(f"{build.OUT}/rows.parquet")
     key = ["game_id", "posteam", "defteam"]

@@ -1,0 +1,33 @@
+                                      r 2016-25  r 2023-25  MAE 2016-25  r 2026 wk1-6  MAE 2026 wk1-6
+14 terms, pregame only (recommended)     0.3512     0.3687       1.4084        0.3988          1.3807
+17 terms, with schedule-starter QB       0.3551     0.3694       1.4052        0.3977          1.3816
+        game_id posteam defteam opp_qb_name pre_qb_name  top_qb_name  c_qb_epa  c_qb_epa_pre  c_qb_new  proj_ypa_14  proj_ypa_17
+2026_07_CIN_BAL     BAL     CIN   T.Huntley   T.Huntley    L.Jackson     0.028         0.028         1        6.685        6.714
+2026_07_CIN_BAL     CIN     BAL    J.Burrow    J.Burrow     J.Burrow     0.120         0.120         0        6.626        6.649
+2026_07_CLE_TEN     CLE     TEN    D.Watson    D.Watson    S.Sanders    -0.041        -0.041         1        5.439        5.488
+2026_07_CLE_TEN     TEN     CLE      C.Ward      C.Ward       C.Ward    -0.194        -0.194         0        5.220        5.266
+2026_07_DAL_PHI     DAL     PHI  D.Prescott  D.Prescott   D.Prescott     0.154         0.154         0        6.602        6.677
+2026_07_DAL_PHI     PHI     DAL     J.Hurts     T.McKee      J.Hurts     0.021        -0.118         0        5.692        5.846
+2026_07_DEN_ARI     ARI     DEN  J.Brissett  J.Brissett   J.Brissett    -0.009        -0.009         0        5.616        5.609
+2026_07_DEN_ARI     DEN     ARI       B.Nix       B.Nix        B.Nix     0.046         0.046         0        6.331        6.386
+ 2026_07_GB_DET     DET      GB      J.Goff      J.Goff       J.Goff     0.204         0.204         0        7.574        7.500
+ 2026_07_GB_DET      GB     DET      J.Love      J.Love       J.Love     0.193         0.193         0        6.662        6.780
+2026_07_IND_MIN     IND     MIN     D.Jones     D.Jones      D.Jones     0.041         0.041         0        5.101        5.186
+2026_07_IND_MIN     MIN     IND    K.Murray    K.Murray   J.McCarthy    -0.043        -0.043         1        6.281        6.231
+ 2026_07_KC_SEA      KC     SEA   P.Mahomes   P.Mahomes    P.Mahomes     0.138         0.138         0        5.534        5.488
+ 2026_07_KC_SEA     SEA      KC   S.Darnold   S.Darnold    S.Darnold     0.057         0.057         0        6.363        6.309
+  2026_07_LA_LV      LA      LV  M.Stafford  M.Stafford   M.Stafford     0.185         0.185         0        6.855        6.922
+  2026_07_LA_LV      LV      LA   K.Cousins   K.Cousins      G.Smith     0.075         0.075         1        6.410        6.332
+2026_07_MIA_NYJ     MIA     NYJ    M.Willis    M.Willis T.Tagovailoa    -0.031        -0.031         1        5.572        5.599
+2026_07_MIA_NYJ     NYJ     MIA     G.Smith     G.Smith     J.Fields    -0.087        -0.087         1        6.078        6.002
+ 2026_07_NE_CHI     CHI      NE  C.Williams  C.Williams   C.Williams     0.098         0.098         0        7.017        6.956
+ 2026_07_NE_CHI      NE     CHI      D.Maye      D.Maye       D.Maye     0.248         0.248         0        6.442        6.457
+2026_07_NYG_HOU     HOU     NYG    C.Stroud    C.Stroud     C.Stroud     0.108         0.108         0        6.764        6.795
+2026_07_NYG_HOU     NYG     HOU  J.McCarthy   J.Winston       J.Dart    -0.166        -0.016         1        5.144        5.121
+ 2026_07_PIT_NO      NO     PIT    T.Shough    T.Shough     T.Shough    -0.025        -0.025         0        5.828        5.833
+ 2026_07_PIT_NO     PIT      NO   A.Rodgers   A.Rodgers    A.Rodgers    -0.022        -0.022         0        6.521        6.450
+ 2026_07_SF_ATL     ATL      SF     M.Penix     M.Penix      M.Penix     0.031         0.031         0        6.664        6.683
+ 2026_07_SF_ATL      SF     ATL     B.Purdy     B.Purdy      B.Purdy     0.242         0.242         0        7.093        7.105
+ 2026_07_TB_CAR     CAR      TB     B.Young     B.Young      B.Young     0.028         0.028         0        6.661        6.781
+ 2026_07_TB_CAR      TB     CAR   J.Daniels   J.Daniels   B.Mayfield    -0.193        -0.193         1        5.990        5.840
+missing cells (filled with training medians): none

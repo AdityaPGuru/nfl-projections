@@ -1,0 +1,3 @@
+108 features checked on 28 rows in the scrambled weeks; moved: ['c_qb_ypa', 'c_qb_epa', 'c_qb_sack', 'c_qb_cpoe', 'c_qb_dropbacks', 'c_qb_new', 'c_qb_logdb']
+target moved (should be yes): True
+later-week features moved (should be yes): True

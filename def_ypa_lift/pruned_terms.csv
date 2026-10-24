@@ -1,9 +1,10 @@
 stat
 def_blowout_std_air_comp_mean
-def_comp_all_sr
+def_neut_q2_air_yards
 def_backedup_ypa_min
 def_blowout_air_std
 def_qb_hit_rate_q4
+def_epa_neutral_behind_los
 def_td_rate_behind_los
 def_yac_epa_per_dropback_ytd
 def_rest_days

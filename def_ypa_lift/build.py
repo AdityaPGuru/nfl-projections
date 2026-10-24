@@ -10,7 +10,10 @@ Usage: python def_ypa_lift/build.py   (reads te_share/data, writes def_ypa_lift/
 import os, glob, numpy as np, pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
-DATA = os.environ.get("S", os.path.join(ROOT, "te_share", "data")); OUT = os.path.join(HERE, "data"); os.makedirs(OUT, exist_ok=True)
+DATA = os.environ.get("S", os.path.join(ROOT, "te_share", "data")); OUT = os.environ.get("OUT", os.path.join(HERE, "data")); os.makedirs(OUT, exist_ok=True)
+# Forecast mode: FORECAST=2026,7 keeps only plays from weeks strictly before that week and appends that week's scheduled games as rows
+# with no outcome. Historical rows come out identical to the default build (week7/check_same.py verifies this).
+FORECAST = tuple(int(v) for v in os.environ["FORECAST"].split(",")) if os.environ.get("FORECAST") else None
 COLS = ["game_id", "season", "week", "season_type", "posteam", "defteam", "home_team", "pass_attempt", "rush_attempt", "sack", "qb_hit", "qb_scramble",
         "complete_pass", "yards_gained", "air_yards", "yards_after_catch", "epa", "yac_epa", "success", "cpoe", "interception", "pass_touchdown", "down",
         "ydstogo", "qtr", "score_differential", "yardline_100", "two_point_attempt", "passer_player_id", "receiver_player_id", "xpass", "pass_oe", "wp",
@@ -19,8 +22,9 @@ COLS = ["game_id", "season", "week", "season_type", "posteam", "defteam", "home_
 
 def load():
     p = pd.concat([pd.read_parquet(f, columns=COLS) for f in sorted(glob.glob(f"{DATA}/pbp/pbp_*.parquet"))], ignore_index=True)
-    p = p[(p.season_type == "REG") & p.posteam.notna() & p.defteam.notna() & (p.season <= 2025)].copy()
+    p = p[(p.season_type == "REG") & p.posteam.notna() & p.defteam.notna()].copy()
     p["t"] = p.season * 100 + p.week
+    p = p[p.t < FORECAST[0] * 100 + FORECAST[1]] if FORECAST else p[p.season <= 2025]
     return p
 
 
@@ -93,6 +97,10 @@ def main():
     tgt = db.groupby(["game_id", "season", "week", "posteam", "defteam", "home_team"], as_index=False).agg(yds=("yards_gained", "sum"), n=("yards_gained", "size"))
     tgt["ypa"] = tgt.yds / tgt.n
     games = pd.read_csv(f"{DATA}/aux/games.csv"); games = games[games.game_type == "REG"]
+    if FORECAST:   # one row per (game, offense) for the forecast week, outcome unknown
+        fw = games[(games.season == FORECAST[0]) & (games.week == FORECAST[1])]
+        fr = pd.concat([fw.assign(posteam=fw.home_team, defteam=fw.away_team), fw.assign(posteam=fw.away_team, defteam=fw.home_team)])
+        tgt = pd.concat([tgt, fr[["game_id", "season", "week", "posteam", "defteam", "home_team"]]], ignore_index=True)
     tgt = tgt.merge(games[["game_id", "away_team", "spread_line", "total_line", "roof", "surface", "temp", "wind", "away_rest", "home_rest", "div_game",
                            "away_qb_id", "home_qb_id", "referee", "away_moneyline", "home_moneyline", "gameday", "gametime"]], on="game_id", how="left")
     home = tgt.posteam == tgt.home_team; sgn = np.where(home, 1, -1)
@@ -151,11 +159,9 @@ def main():
 
     # primary QB = the offense's passer with most dropbacks in the window; his stats over his own window (any team)
     qb = db[db.passer_player_id.notna()].copy()
-    qa = rate_feats(qb, "passer_player_id", {"q_succ": (qb.success, pd.Series(1.0, index=qb.index)), "q_expl": (qb.yards_gained >= 20, pd.Series(1.0, index=qb.index)),
+    QA_SPEC = lambda: {"q_succ": (qb.success, pd.Series(1.0, index=qb.index)), "q_expl": (qb.yards_gained >= 20, pd.Series(1.0, index=qb.index)),
                                              "q_yacpc": (qb.yards_after_catch.fillna(0) * qb.comp, qb.comp), "q_yacepa": (qb.yac_epa.fillna(0) * qb.comp, pd.Series(1.0, index=qb.index)),
-                                             "q_cay": (qb.air_yards.fillna(0) * qb.comp, qb.comp), "q_cmp": (qb.comp * (qb.sack == 0), qb.sack == 0)},
-                    pd.concat([qb[["passer_player_id", "season", "week"]].drop_duplicates(),
-                               tgt[["opp_qb_id", "season", "week"]].rename(columns={"opp_qb_id": "passer_player_id"}).dropna()]))
+                                             "q_cay": (qb.air_yards.fillna(0) * qb.comp, qb.comp), "q_cmp": (qb.comp * (qb.sack == 0), qb.sack == 0)}
     cnt = qb.groupby([O, "season", "week", "passer_player_id"]).size().rename("n").reset_index()
     rows = tgt[[O, "season", "week"]].drop_duplicates(); top = []
     byo = {k: v for k, v in cnt.groupby(O)}
@@ -163,6 +169,10 @@ def main():
         g = byo.get(team); sel = g[(g.season == s - 1) | ((g.season == s) & (g.week < w))] if g is not None else None
         top.append(sel.groupby("passer_player_id").n.sum().idxmax() if sel is not None and len(sel) else None)
     rows = rows.assign(top_qb=top)
+    # The QB's window row must exist whether or not he plays this week. (v1 built the grid only from weeks he played, so the
+    # feature went missing exactly when the usual QB sat out -- a same-game leak through missingness.)
+    PLAYED = qb[["passer_player_id", "season", "week"]].drop_duplicates()
+    qa = rate_feats(qb, "passer_player_id", QA_SPEC(), pd.concat([PLAYED, rows[["top_qb", "season", "week"]].rename(columns={"top_qb": "passer_player_id"}).dropna()]))
     rows = rows.merge(qa.rename(columns={"passer_player_id": "top_qb"}), on=["top_qb", "season", "week"], how="left")
     rows = rows.rename(columns={"q_succ": "off_top_qb_success_rate_ytd", "q_expl": "off_top_qb_explosive_pass_rate_ytd", "q_yacpc": "off_top_qb_yac_per_completion_ytd",
                                 "q_yacepa": "off_top_qb_yac_epa_per_dropback_ytd", "q_cay": "off_ngs_top_qb_avg_completed_air_yards_ytd", "q_cmp": "off_ngs_top_qb_completion_percentage_ytd"})
@@ -205,19 +215,32 @@ def main():
     t4 = tgt[["game_id", "season", "week", O, D, "yds", "n"]].merge(CD[[D, "season", "week", "c_def_ypa"]], how="left")
     t4["exp"] = t4.c_def_ypa.fillna(t4.yds / t4.n) * t4.n; t4["over"] = t4.yds - t4.exp
     adjo = rate_feats(t4, O, {"c_off_ypa_oppadj": (t4.over, t4.n)}, tgt)
-    # C4. the actual starting QB listed for the game (schedule) -- his own ytd stats, and whether he is new vs the team's usual QB
+    # C4. the starting QB listed in the schedule (nflverse fills a projected starter days before the game and overwrites it with the
+    # actual starter afterward) -- his ytd stats over all his dropbacks, and whether he differs from the team's usual QB
     qs = rate_feats(qb, "passer_player_id", {"c_qb_ypa": (qb.yards_gained, pd.Series(1.0, index=qb.index)), "c_qb_epa": (qb.epa, pd.Series(1.0, index=qb.index)),
                                              "c_qb_sack": (qb.sack, pd.Series(1.0, index=qb.index)), "c_qb_cpoe": (qb.cpoe.fillna(0), qb.cpoe.notna()),
                                              "c_qb_n": (pd.Series(1.0, index=qb.index), pd.Series(1.0, index=qb.index) * 0 + 1)},
-                    tgt[["opp_qb_id", "season", "week"]].rename(columns={"opp_qb_id": "passer_player_id"}).dropna())
+                    pd.concat([PLAYED, tgt[["opp_qb_id", "season", "week"]].rename(columns={"opp_qb_id": "passer_player_id"}).dropna()]))
     qn = qb.groupby(["passer_player_id", "season", "week"]).size().rename("k").reset_index()
-    qn = tgt[["opp_qb_id", "season", "week"]].rename(columns={"opp_qb_id": "passer_player_id"}).dropna().drop_duplicates().merge(qn, how="left").fillna(0)
+    qn = pd.concat([PLAYED, tgt[["opp_qb_id", "season", "week"]].rename(columns={"opp_qb_id": "passer_player_id"}).dropna()]).drop_duplicates().merge(qn, how="left").fillna(0)
     qn2 = window(qn, "passer_player_id", ["k"]).rename(columns={"k": "c_qb_dropbacks"})
     qs = qs.drop(columns="c_qb_n").merge(qn2, how="left").rename(columns={"passer_player_id": "opp_qb_id"})
 
     X = X.merge(CD, on=[D, "season", "week"], how="left").merge(CO, on=[O, "season", "week"], how="left").merge(adj, on=[D, "season", "week"], how="left")
     X = X.merge(adjo, on=[O, "season", "week"], how="left").merge(qs, on=["opp_qb_id", "season", "week"], how="left")
     X["c_qb_new"] = (X.opp_qb_id != X.top_qb) * 1
+    # C4b. pregame-only QB choice: the offense's leading passer (most dropbacks) in its most recent completed game,
+    # with that QB's stats over ALL his dropbacks in the window (prior season + earlier weeks, any team).
+    lead = qb.groupby([O, "season", "week", "passer_player_id"]).size().rename("k").reset_index().sort_values(["k", "passer_player_id"]).drop_duplicates([O, "season", "week"], keep="last")  # ties -> fixed order
+    lead["t"] = (lead.season * 100 + lead.week).astype("int64")
+    tt = X[[O, "season", "week"]].drop_duplicates().assign(t=lambda z: (z.season * 100 + z.week).astype("int64")).sort_values("t")
+    tt = pd.merge_asof(tt, lead.sort_values("t")[[O, "t", "passer_player_id"]], on="t", by=O, allow_exact_matches=False).rename(columns={"passer_player_id": "pre_qb_id"})
+    X = X.merge(tt[[O, "season", "week", "pre_qb_id"]], on=[O, "season", "week"], how="left")
+    one_q = pd.Series(1.0, index=qb.index)
+    qp = rate_feats(qb, "passer_player_id", {"c_qb_epa_pre": (qb.epa, one_q), "c_qb_ypa_pre": (qb.yards_gained, one_q), "c_qb_sack_pre": (qb.sack, one_q)},
+                    pd.concat([qb[["passer_player_id", "season", "week"]], X[["pre_qb_id", "season", "week"]].rename(columns={"pre_qb_id": "passer_player_id"}).dropna()]))
+    X = X.merge(qp.rename(columns={"passer_player_id": "pre_qb_id"}), on=["pre_qb_id", "season", "week"], how="left")
+    X["c_qb_new_pre"] = (X.pre_qb_id != X.top_qb) * 1
     X["c_qb_logdb"] = np.log1p(X.c_qb_dropbacks.fillna(0))
 
     # C5. injury report (final report, published before kickoff): starters-ish counts by position group listed Out/Doubtful

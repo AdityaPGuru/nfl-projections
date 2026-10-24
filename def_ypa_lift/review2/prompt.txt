@@ -1,0 +1,10 @@
+Adversarial review, read-only. Directory def_ypa_lift/ in an NFL repo (run from def_ypa_lift; history data in ../te_share/data; 2026 snapshot in week7/inputs_2026-10-23, linked by week7/setup_inputs.sh into week7/data).
+
+Changes since the last review:
+1. build.py: fixed a missingness leak in the top-QB terms (off_top_qb_*): the QB window grid previously existed only in weeks the QB played, so values were missing exactly when the usual QB sat out. Now qa is computed on PLAYED + (top_qb, season, week) rows. c_qb_* (schedule starter) now windows over all the QB's dropbacks. New pregame QB variant c_qb_*_pre (leading passer in the offense's previous completed game, via merge_asof).
+2. build.py FORECAST=2026,7 mode: drops plays with season*100+week >= 202607 and appends the week's schedule rows with no outcome.
+3. leak_test.py now also fakes passer IDs and schedule starter IDs for the scrambled week.
+4. week7/project.py fits OLS on all completed rows and projects Week 7 for a 14-term (pruned_terms_noqb.csv) and a 17-term (pruned_terms.csv) model.
+5. SPEC.md documents every term, c_qb_epa, the cutoff, files, and the Week 7 table. README.md has corrected numbers.
+
+Attack: any remaining same-game or future leak (especially in FORECAST mode: does anything from 2026 week 7 or later reach week 7 rows? the NE@CHI game on Oct 22 is in pbp_2026), whether merge_asof with allow_exact_matches=False is right, whether the window for the top QB is now correct for players who change teams, whether SPEC.md definitions match the code exactly (check each of the 14 terms and c_qb_epa against build.py), whether README/SPEC numbers match results_*.csv, compact_log.txt, eval_log.txt, week7/qb_variant_scores.csv, week7/week7_2026_terms_and_projections.csv. You may run python3 -W ignore to check; do not modify files. Report bugs with file:line and whether each changes a conclusion. End with VERDICT: SOUND or VERDICT: BUGS-FOUND.
