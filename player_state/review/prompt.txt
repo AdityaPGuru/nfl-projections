@@ -1,0 +1,9 @@
+Adversarial review, read-only. Directory player_state/ in an NFL repo (repo root is ..). Run from the repo root. Inputs: ../te_share/data (pbp 2012-2025, snaps, players), player_state/raw (depth charts, injuries), def_ypa_lift/data/rows.parquet (14-term base features), def_ypa_lift/week7/inputs_2026-10-23/games.csv.
+
+Claims to attack (README.md):
+1. build_state.py builds pregame player-state features with no same-game or future leak (leak_test_state.py passes). Check every window (week < target week), the established core windows (previous 8 team games, k < current k), expected_state() (injury filter by gameday, depth chart joins, 2025 snapshot strictly before kickoff), qrows covariates (postgame core miss shares used only for history rows), and the oracle columns being kept out of arm C.
+2. Ridge penalties and the expected-QB rule are chosen on 2013-2015 only.
+3. evaluate_state.py matches the protocol (expanding weekly OLS, training-median fill) on exactly 5,278 keyed rows; paired SEs are computed right.
+4. his_twoway_spec.py implements the written H1 spec (same-season week<w, half-life 1 week, lambda 4 attempts) without leakage, and the ceiling argument (single-game Pearson cap ~0.32-0.35 from luck: SD decomposition and split-half reliability) is sound. If you think the ceiling argument is wrong, say exactly why.
+5. Every number in README.md matches out/*.csv and the scripts' output.
+Also check target definition, team-code normalization (OAK/SD/STL), and the merge keys. You may run python3 -W ignore; do not modify files. Report concrete bugs with file:line and whether each changes a conclusion. End with VERDICT: SOUND or VERDICT: BUGS-FOUND.

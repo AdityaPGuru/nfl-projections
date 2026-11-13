@@ -1,0 +1,3 @@
+rows 5278  SD of game YPA 1.867  luck SD 1.770  non-luck SD 0.594
+variance-split ceiling r = 0.318
+split-half r (mean of 200 splits) 0.051 -> reliability 0.097 -> ceiling r 0.311  (95% interval 0.197 to 0.388)

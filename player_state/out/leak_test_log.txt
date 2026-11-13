@@ -1,0 +1,4 @@
+14 pregame features on 28 rows of 2021 week 9; moved: none; expected/established QB ids moved: none
+outcome moved (should be yes): True
+oracle QB columns moved (should be yes): True
+later-week pregame features moved (should be yes): True

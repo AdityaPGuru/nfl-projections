@@ -1,0 +1,38 @@
+I found two substantive overclaims and one small leakage defect. Core evaluation results remain unchanged.
+
+1. Injury filtering is not strictly pre-kickoff. [build_state.py:64](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/build_state.py:64) parses exact timestamps, but [build_state.py:71](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/build_state.py:71) compares only the Eastern calendar date with `gameday`. Thus a report modified after kickoff on gameday is retained.
+
+   In the supplied inputs, this affects one retained record: BAL, 2024 Week 1, player `00-0031360`, modified `2024-09-06 03:11:40 UTC`, versus kickoff `2024-09-06 00:20:00 UTC`. The leak test cannot catch this because it perturbs PBP/snaps, not external-source timestamps.
+
+   Impact: violates the literal “no same-game/future leak” claim, but is too isolated to plausibly change the negative player-state conclusion.
+
+2. The claimed 0.32–0.35 “ceiling” is not a defensible hard ceiling. [README.md:9](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/README.md:9)–[README.md:12](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/README.md:12) treats marginal per-attempt dispersion divided by approximately √33 as wholly unpredictable independent luck. That requires independent, identically distributed play errors and assumes none of the within-game dispersion is predictable from pregame information. Neither is established.
+
+   Likewise, converting a random split-half correlation to √reliability gives a reliability-based estimate only under parallel halves, independent errors, and a stable latent game mean. Football plays have shared game state, sequencing, possession, score, and selection effects. A random partition of one realized game also does not demonstrate an information-theoretic bound on every pregame predictor.
+
+   Therefore 0.32–0.35 is a useful noise/reliability diagnostic, not proof that “nothing honest can” exceed it. No script or `out/*.csv` reproduces the stated 1.87, 1.77, 0.59, or 0.067 inputs either.
+
+   Impact: changes the broad conclusion that the leaked 0.511/0.544 controls are impossible solely because they exceed 0.35. Their large values remain highly suspicious, and the clean H1 result strongly contradicts them, but the proposed ceiling does not prove leakage by itself.
+
+3. The oracle arm is not a ceiling on all better player data. [README.md:73](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/README.md:73) calls the D row “the” ceiling and says better historical player data cannot beat it. But arm D only adds two features from this particular ridge QB model—see [evaluate_state.py:22](/Users/AdityaGuruHome/Documents/screenshots/Coding/Projects/nfl-projections/player_state/evaluate_state.py:22). Knowing the actual QB within this feature specification does not bound improved receiver, OL, defensive-player, interaction, availability, or nonlinear models.
+
+   Impact: invalidates that general ceiling claim. It does not change the narrower empirical finding that this implementation’s oracle-QB arm adds only +0.003 Pearson.
+
+Everything else checked out:
+
+- All rating windows are strictly previous season or current-season `week < target week`.
+- Established cores use exactly `k-8 <= historical k < current k`.
+- Postgame core-missing shares enter only historical rating rows.
+- The 2025 depth snapshot uses `timestamp < kickoff`.
+- Oracle fields are absent from arm C.
+- Ridge penalties and expected-QB selection use 2013–2015 only. Reported accuracies reproduce as 0.8893, 0.9056 and 0.9043; selected penalties are QB 3000/team 1000.
+- Evaluation uses expanding weekly OLS and training-only median fill.
+- The panel has exactly 5,278 unique `(game_id, posteam, defteam)` keys, all matching `rows.parquet`, with no duplicate keys.
+- The clustered paired bootstrap resamples weeks within seasons and keeps paired rows together. Its SEs match the saved output.
+- H1 uses same-season `week < w`, the documented recency weights and λ=4 without target-week leakage.
+- Target construction matches the stated ordinary-YPA filter.
+- Historical team codes resolve consistently to `LV`, `LAC`, and `LA`; no old codes remain in either keyed panel.
+- Headline evaluation and H1 numbers match the CSV outputs, subject to the unsupported ceiling calculations noted above.
+- The substantive model conclusion still holds: arm C does not qualify, and this specific oracle-QB arm adds little.
+
+VERDICT: BUGS-FOUND

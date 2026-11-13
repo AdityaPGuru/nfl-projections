@@ -1,0 +1,52 @@
+panel rows: 5278
+                                             subset                         arm  rows  Pearson    MAE   RMSE  forecast SD  pairwise acc
+                                     2016-2025 full                   A base 14  5278   0.3035 1.3826 1.7786       0.5603        0.6069
+                                     2016-2025 full        B control: + two-way  5278   0.3057 1.3804 1.7771       0.5690        0.6083
+                                     2016-2025 full  C + player state (pregame)  5278   0.3034 1.3811 1.7786       0.5817        0.6059
+                                     2016-2025 full D ORACLE: + actual-QB state  5278   0.3088 1.3802 1.7753       0.5726        0.6103
+                                2016-2022 discovery                   A base 14  3646   0.2927 1.3764 1.7608       0.5541        0.6016
+                                2016-2022 discovery        B control: + two-way  3646   0.2964 1.3739 1.7583       0.5650        0.6035
+                                2016-2022 discovery  C + player state (pregame)  3646   0.2961 1.3728 1.7587       0.5807        0.6014
+                                2016-2022 discovery D ORACLE: + actual-QB state  3646   0.2980 1.3729 1.7574       0.5663        0.6051
+                             2023-2025 confirmation                   A base 14  1632   0.3295 1.3966 1.8178       0.5467        0.6188
+                             2023-2025 confirmation        B control: + two-way  1632   0.3305 1.3947 1.8184       0.5466        0.6190
+                             2023-2025 confirmation  C + player state (pregame)  1632   0.3238 1.3996 1.8221       0.5536        0.6160
+                             2023-2025 confirmation D ORACLE: + actual-QB state  1632   0.3345 1.3964 1.8146       0.5610        0.6218
+                                          weeks 1-4                   A base 14  1270   0.2807 1.3862 1.7858       0.5140        0.5953
+                                          weeks 1-4        B control: + two-way  1270   0.2871 1.3843 1.7831       0.5166        0.6003
+                                          weeks 1-4  C + player state (pregame)  1270   0.2753 1.3900 1.7885       0.5334        0.5965
+                                          weeks 1-4 D ORACLE: + actual-QB state  1270   0.2883 1.3838 1.7823       0.5194        0.6018
+       QB-transition games (actual starter changed)                   A base 14   692   0.2979 1.4102 1.7876       0.5276        0.6111
+       QB-transition games (actual starter changed)        B control: + two-way   692   0.2939 1.4121 1.7897       0.5293        0.6036
+       QB-transition games (actual starter changed)  C + player state (pregame)   692   0.2775 1.4232 1.8022       0.5670        0.6031
+       QB-transition games (actual starter changed) D ORACLE: + actual-QB state   692   0.3034 1.4080 1.7846       0.5250        0.6102
+expected QB differs from established (pregame flag)                   A base 14  1885   0.2870 1.3949 1.7986       0.5318        0.6011
+expected QB differs from established (pregame flag)        B control: + two-way  1885   0.2867 1.3948 1.7984       0.5322        0.5973
+expected QB differs from established (pregame flag)  C + player state (pregame)  1885   0.2770 1.3947 1.8035       0.5395        0.5962
+expected QB differs from established (pregame flag) D ORACLE: + actual-QB state  1885   0.2925 1.3940 1.7953       0.5285        0.6005
+                                    stable-QB games                   A base 14  4586   0.2921 1.3785 1.7772       0.5530        0.6041
+                                    stable-QB games        B control: + two-way  4586   0.2959 1.3756 1.7752       0.5644        0.6067
+                                    stable-QB games  C + player state (pregame)  4586   0.2968 1.3747 1.7750       0.5759        0.6051
+                                    stable-QB games D ORACLE: + actual-QB state  4586   0.2982 1.3760 1.7739       0.5688        0.6081
+
+Pearson by season
+  season  A base 14  B control: + two-way  C + player state (pregame)  D ORACLE: + actual-QB state
+   2016     0.3194                0.3196                      0.3212                       0.3182
+   2017     0.2564                0.2577                      0.2512                       0.2591
+   2018     0.3017                0.3024                      0.3020                       0.3034
+   2019     0.3175                0.3254                      0.3152                       0.3245
+   2020     0.3063                0.3141                      0.3052                       0.3144
+   2021     0.3010                0.3003                      0.3106                       0.3054
+   2022     0.2301                0.2351                      0.2415                       0.2359
+   2023     0.3301                0.3299                      0.3177                       0.3327
+   2024     0.2987                0.2948                      0.2948                       0.2989
+   2025     0.3674                0.3728                      0.3641                       0.3761
+
+Paired vs control B
+                                       subset             challenger vs B  dPearson     se    dMAE  se_MAE   dRMSE  se_RMSE
+                              2016-2025 full  C + player state (pregame)   -0.0022 0.0027  0.0007  0.0016  0.0014   0.0017
+                              2016-2025 full D ORACLE: + actual-QB state    0.0031 0.0015 -0.0002  0.0008 -0.0019   0.0009
+                      2023-2025 confirmation  C + player state (pregame)   -0.0068 0.0035  0.0048  0.0018  0.0037   0.0020
+                      2023-2025 confirmation D ORACLE: + actual-QB state    0.0040 0.0038  0.0016  0.0023 -0.0038   0.0023
+QB-transition games (actual starter changed)  C + player state (pregame)   -0.0164 0.0108  0.0111  0.0059  0.0126   0.0064
+QB-transition games (actual starter changed) D ORACLE: + actual-QB state    0.0095 0.0040 -0.0041  0.0024 -0.0051   0.0022
